@@ -131,11 +131,20 @@ namespace Server
         /// <summary>
         /// Получение файлов от клиента (по пакетам)
         /// </summary>
-        /// <param name="infoFile">Количество байт полученных от клиента</param>
-        /// <param name="startSend">Состояние начала отправки файла</param>
-        public static void ReceivedFile(byte[] infoFile, bool startSend)
+        /// <param name="fileSize">Записываемый буффер</param>  
+        /// <param name="infoFile">Количество байт полученных от клиента</param>     
+        /// <param name="countRecByte">Размер пакета</param>     
+        internal static void ReceivedFile(FileSett file, byte[] infoFile, int countRecByte)
         {
+            if (file.progressSend == null)
+                file.progressSend = infoFile;
 
+            else
+            {
+                Array.Resize(ref file.progressSend, countRecByte + file.progressSend.Length);
+                Buffer.BlockCopy(file.progressSend, file.progressSend.Length, infoFile, 0, countRecByte);
+            }
+            ServerClass.SendMsgClient(file.user.socket, 32, 1001, 1);
         }
 
         /// <summary>
@@ -155,6 +164,5 @@ namespace Server
 
             ServerClass.clients.Add(cl);
         }
-
     }
 }

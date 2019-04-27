@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -95,7 +96,7 @@ namespace ClientServerDiplom
             OpenFileDialog project = new OpenFileDialog
             {
                 FileName = string.Empty,
-                Filter = "Project files| *.csproj"
+                Filter = "Project files| *.zip"
             };
 
             bool? result = project.ShowDialog();
@@ -110,6 +111,9 @@ namespace ClientServerDiplom
                     {
                         myItems.Add(SetNewInfoAtListView(++countProject, fullName[fullName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                         RefreshListView(myItems);
+
+                        OperationServer.fileSend = new FileSend(File.ReadAllBytes(project.FileName), fullName[fullName.Length - 1]);
+                        MessageBox.Show("Файл(ы) успешно добавлены!");
                     }
                 }
                 else
@@ -126,13 +130,13 @@ namespace ClientServerDiplom
         {
             bool isDontLoadFile = false; 
             string[] fileDrop = (string[])e.Data.GetData(DataFormats.FileDrop);
-
+         
             for (int i = 0; i < fileDrop.Length; i++)
-            {
+            {            
                 string[] fileName = fileDrop[i].Split('\\');
                 string[] expansionFile = fileName[fileName.Length - 1].Split('.');
 
-                if (expansionFile[expansionFile.Length - 1].Equals("csproj"))
+                if (expansionFile[expansionFile.Length - 1].Equals("zip"))
                 {
                     if (fileName[fileName.Length - 1].Length <= 45)
                     {
@@ -140,7 +144,10 @@ namespace ClientServerDiplom
                         {
                             myItems.Add(SetNewInfoAtListView(++countProject, fileName[fileName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                             RefreshListView(myItems);
-                        }
+
+                            OperationServer.fileSend = new FileSend(File.ReadAllBytes(fileDrop[0]),fileName[fileName.Length - 1]);
+                            MessageBox.Show("Файл(ы) успешно добавлены!");
+                        }                   
                     }
                     else
                         MessageBox.Show("Длина имени файла не должна превышать 45 символов");
@@ -151,8 +158,9 @@ namespace ClientServerDiplom
                 }
             }
 
-            if(isDontLoadFile)
-                MessageBox.Show("Неверное расширение файла! Файл должен быть расширения *.csproj");
+            if (isDontLoadFile)
+                MessageBox.Show("Неверное расширение файла! Файл должен быть расширения *.zip");
+            
         }
 
         #endregion

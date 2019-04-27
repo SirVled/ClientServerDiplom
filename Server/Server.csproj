@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />
+    <Compile Include="FileSett.cs" />
     <Compile Include="MySqlClass.cs" />
     <Compile Include="OperationServerAtClient.cs" />
     <Compile Include="ServerClass.cs" />

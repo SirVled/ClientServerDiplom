@@ -11,15 +11,17 @@ using System.Windows;
 
 namespace ClientServerDiplom
 {
-  abstract public class OperationServer
+    abstract public class OperationServer
     {
-
 
         private const int port = 5455;
         private const string server = "127.0.0.1";
 
         public static Socket serverSocket; // Сокет для подключения к серверу
         public static Thread thread; // Поток для получения данных от сервера;
+        
+        public static FileSend fileSend { get; set; } // Файл который будет отправлятся на сервер;
+        private const int sizePacket = 1024; // Размер пакета который отправляется на сервер;
 
         /// <summary>
         /// Получение ответа от сервера
@@ -102,6 +104,41 @@ namespace ClientServerDiplom
 
                             #endregion
                             break;
+
+
+                        #region Передача файлов
+                          
+                        case 1001:
+                            #region Отправка файла серверу
+
+                            MessageBox.Show("231");
+                            switch (reader.ReadInt32())
+                            {
+                                // Продалжаем отправлять пакеты;
+                                case 1:
+                                    if(fileSend != null && fileSend.fileByte.Length != 0)
+                                    {
+                                        fileSend.countSendByte += sizePacket;
+
+                                        int indexF = fileSend.countSendByte;
+                                        SendMsgClient(1032, 1002, new MemoryStream(fileSend.fileByte, indexF, sizePacket, true, true), 1024);
+                                        fileSend.countIteration++;
+                                       // MessageBox.Show("123");
+                                    }
+                                   // MessageBox.Show("321");
+                                    break;
+                                // Закончили отправлять пакеты;
+                                case 2:
+                                    break;
+                                // Уменьшение пакета;
+                                case 3:
+                                    break;
+                            }
+
+                            #endregion
+                            break;
+
+                        #endregion
                     }
 
                     if (!soket.Connected)
@@ -119,8 +156,7 @@ namespace ClientServerDiplom
                 try
                 {
                     Application.Current.Dispatcher.Invoke(new ThreadStart(()=> 
-                    {
-                   
+                    {                  
                         Application.Current.Shutdown();
                     
                     }));
@@ -163,11 +199,29 @@ namespace ClientServerDiplom
             BinaryWriter writer = new BinaryWriter(msTF);
 
             writer.Write(idOperation);
-
+            
             for (int i = 0; i < sendArrData.Length; i++)
-                writer.Write(sendArrData[i]);
-
+            {
+                if(sendArrData[i].GetType() != typeof(MemoryStream))
+                    writer.Write(sendArrData[i]);            
+            }
             serverSocket.Send(msTF.GetBuffer());
+        }
+
+        /// <summary>
+        /// Отправляем файл Серверу
+        /// </summary>    
+        /// <param name="memoryBit">Кол-во памяти</param>
+        /// <param name="idOperation">Идентификатор опирации</param>
+        /// <param name="sendPacket">Байты пакета</param>
+        /// <param name="countSendByte">Количество отправленных байтов</param>
+        public static void SendMsgClient(int memoryBit, int idOperation, MemoryStream sendPacket, int countSendByte)
+        {
+            BinaryWriter writer = new BinaryWriter(sendPacket);
+            writer.Write(idOperation);  
+            writer.Write(countSendByte);
+
+            serverSocket.Send(sendPacket.GetBuffer());
         }
     }
 }

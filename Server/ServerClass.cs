@@ -16,6 +16,7 @@ namespace ServerDiplom
         private const int port = 5455; // Порт для прослушивания подключений
 
         public static List<Client> clients = new List<Client>(); // Список юзеров которые успешно вошли;
+        public static List<FileSett> fileSettList = new List<FileSett>(); // Список файлов которые отправляются на серверв в данный момент;
         private static Socket soket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); // Принимающий сокет;
 
         public static int nextID = 0; // Уникальный id юзера;
@@ -120,15 +121,58 @@ namespace ServerDiplom
                                 OperationServerAtClient.UpdateInfoAboutPerson(login, infoUser);
                                 break;
 
-                            // Получение файлов от клиента;
+                            #region Работа с получением файлов
+
+                            // Получение свойств файла от клиента;
                             case 1001:
-                               
+                                foreach(var clientS in clients)
+                                {
+                                    if(clientS.socket == client)
+                                    {
+                                        int sizeFile = reader.ReadInt32();
+                                        fileSettList.Add(new FileSett(reader.ReadString(), sizeFile, clientS));
+                                        Console.WriteLine("Размер файла : " + sizeFile);
+                                        break;
+                                    }
+                                }
                                 break;
+
+                            // Получение пакетов;
+                            case 1002:
+                                foreach (var fileSend in fileSettList)
+                                {
+                                    if (fileSend.user.socket == client)
+                                    {
+                                        int countRecByte = reader.ReadInt32();
+                                        byte[] byteFile = reader.ReadBytes(countRecByte);
+
+                                        Console.WriteLine(countRecByte + "  " + byteFile.Length);
+
+                                        if (fileSend.progressSend == null)
+                                            OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
+                                        else
+                                        {
+                                            Console.WriteLine(fileSend.progressSend.Length);
+                                            if (fileSend.progressSend.Length < fileSend.sizeF)
+                                            {
+                                                OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
+                                            }
+                                            else
+                                            {
+                                                File.WriteAllBytes("tuk.zip", fileSend.progressSend);
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+
+                            #endregion
                         }
                     }
                 }
             }
-            catch (Exception ex)
+          /*  catch (Exception ex)
             {
                 if (client != null)
                 {
@@ -146,7 +190,7 @@ namespace ServerDiplom
                 Console.WriteLine();
                 Console.WriteLine(ex.Message);
                 Console.WriteLine();
-            }
+            }*/
             finally
             {            
                 Thread.CurrentThread.Abort();          

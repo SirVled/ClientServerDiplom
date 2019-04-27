@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ServerDiplom
 {
-    public class Client
+    internal class Client
     {
 
         public int id { get; set; }
@@ -15,6 +15,6 @@ namespace ServerDiplom
         public int countLike { get; set; } // Кол-во лайков на профиле у пользователя;
 
         public Socket socket { get; set; }
-
+    
     }
 }

@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="FileSend.cs" />
     <Compile Include="OperationServer.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="PersonalArea.xaml.cs">
