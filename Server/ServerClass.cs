@@ -54,7 +54,7 @@ namespace ServerDiplom
         private static void CoorCallback(object obj)
         {
             Socket client = (Socket)obj;
-            MemoryStream ms = new MemoryStream(new byte[256], 0, 256, true, true);
+            MemoryStream ms = new MemoryStream(new byte[520], 0, 520, true, true);
             BinaryReader reader = new BinaryReader(ms);
            
             try
@@ -130,8 +130,10 @@ namespace ServerDiplom
                                     if(clientS.socket == client)
                                     {
                                         int sizeFile = reader.ReadInt32();
-                                        fileSettList.Add(new FileSett(reader.ReadString(), sizeFile, clientS));
+                                        fileSettList.Add(new FileSett(reader.ReadString(),reader.ReadString(), sizeFile, clientS));
                                         Console.WriteLine("Размер файла : " + sizeFile);
+                                        
+                                        SendMsgClient(client, 16, 1001);
                                         break;
                                     }
                                 }
@@ -146,28 +148,37 @@ namespace ServerDiplom
                                         int countRecByte = reader.ReadInt32();
                                         byte[] byteFile = reader.ReadBytes(countRecByte);
 
-                                        Console.WriteLine(countRecByte + "  " + byteFile.Length);
-
                                         if (fileSend.progressSend == null)
+                                        {
                                             OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
+                                            fileSend.progress += countRecByte;
+                                        }
                                         else
                                         {
-                                            Console.WriteLine(fileSend.progressSend.Length);
-                                            if (fileSend.progressSend.Length < fileSend.sizeF)
-                                            {
-                                                OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
-                                            }
-                                            else
-                                            {
-                                                File.WriteAllBytes("tuk.zip", fileSend.progressSend);
-                                            }
+                                            Console.WriteLine(fileSend.progress + "  " + fileSend.progressSend.Length);
+                                          
+                                            OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
+                                            fileSend.progress += countRecByte;                             
                                         }
                                         break;
                                     }
                                 }
                                 break;
 
-                            #endregion
+                            // Создание файла по полученным данным от клиента;
+                            case 1003:
+                                foreach (var fileSend in fileSettList)
+                                {
+                                    if (fileSend.user.socket == client)
+                                    {
+                                        string nameFile = fileSend.nameF + fileSend.extensionFile;
+                                        File.WriteAllBytes(nameFile, fileSend.progressSend);
+                                        fileSettList.Remove(fileSend);
+                                    }
+                                        break;
+                                }                               
+                                break;
+                                #endregion
                         }
                     }
                 }

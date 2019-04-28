@@ -136,15 +136,18 @@ namespace Server
         /// <param name="countRecByte">Размер пакета</param>     
         internal static void ReceivedFile(FileSett file, byte[] infoFile, int countRecByte)
         {
-            if (file.progressSend == null)
+            if (file.progressSend == null)           
                 file.progressSend = infoFile;
-
+            
             else
             {
+                byte[] buf = file.progressSend;
                 Array.Resize(ref file.progressSend, countRecByte + file.progressSend.Length);
-                Buffer.BlockCopy(file.progressSend, file.progressSend.Length, infoFile, 0, countRecByte);
+                Buffer.BlockCopy(buf, 0, file.progressSend, 0, buf.Length);
+                Buffer.BlockCopy(infoFile, 0, file.progressSend, file.progress, countRecByte);
             }
-            ServerClass.SendMsgClient(file.user.socket, 32, 1001, 1);
+            
+            ServerClass.SendMsgClient(file.user.socket, 256, 1001);
         }
 
         /// <summary>

@@ -96,7 +96,7 @@ namespace ClientServerDiplom
             OpenFileDialog project = new OpenFileDialog
             {
                 FileName = string.Empty,
-                Filter = "Project files| *.zip"
+               // Filter = "Project files| *.zip"
             };
 
             bool? result = project.ShowDialog();
@@ -112,8 +112,12 @@ namespace ClientServerDiplom
                         myItems.Add(SetNewInfoAtListView(++countProject, fullName[fullName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                         RefreshListView(myItems);
 
-                        OperationServer.fileSend = new FileSend(File.ReadAllBytes(project.FileName), fullName[fullName.Length - 1]);
-                        MessageBox.Show("Файл(ы) успешно добавлены!");
+                        byte[] arrByte = File.ReadAllBytes(project.FileName);
+
+                        string[] nameSendFile = fullName[fullName.Length - 1].Split('.');
+                        OperationServer.fileSend = new FileSend(arrByte, nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
+  
+                        MessageBox.Show("Файл(ы) успешно добавлен(ы)!");
                     }
                 }
                 else
@@ -145,7 +149,9 @@ namespace ClientServerDiplom
                             myItems.Add(SetNewInfoAtListView(++countProject, fileName[fileName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                             RefreshListView(myItems);
 
-                            OperationServer.fileSend = new FileSend(File.ReadAllBytes(fileDrop[0]),fileName[fileName.Length - 1]);
+                            string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
+
+                            OperationServer.fileSend = new FileSend(File.ReadAllBytes(fileDrop[0]), nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
                             MessageBox.Show("Файл(ы) успешно добавлены!");
                         }                   
                     }

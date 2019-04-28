@@ -12,11 +12,11 @@ namespace ClientServerDiplom
     public class FileSend
     {
 
-        public FileSend(byte[] fileByte, string nameF)
+        public FileSend(byte[] fileByte, string nameF,string extensionFile)
         {      
             this.fileByte = fileByte;
-            OperationServer.SendMsgClient(256, 1001, nameF , fileByte.Length);
-            OperationServer.SendMsgClient(1032, 1002, new System.IO.MemoryStream(fileByte, 0, 1024, true ,true), 1024);
+            OperationServer.SendMsgClient(512, 1001, this.fileByte.Length, nameF , extensionFile);
+         //   OperationServer.SendMsgClient(1032, 1002, new System.IO.MemoryStream(fileByte, 0, 1024, true ,true), 1024);
         }
 
         public byte[] fileByte { get; private set; } // Файл в байтах;

@@ -33,7 +33,7 @@ namespace ClientServerDiplom
 
             MemoryStream ms = new MemoryStream(new byte[256], 0, 256, true, true);
             BinaryReader reader = new BinaryReader(ms);
-
+            int bytesSend = 0;
             try
             {
                 while (true)
@@ -111,30 +111,36 @@ namespace ClientServerDiplom
                         case 1001:
                             #region Отправка файла серверу
 
-                            MessageBox.Show("231");
-                            switch (reader.ReadInt32())
+                            if (fileSend != null && fileSend.fileByte.Length != 0)
                             {
-                                // Продалжаем отправлять пакеты;
-                                case 1:
-                                    if(fileSend != null && fileSend.fileByte.Length != 0)
-                                    {
-                                        fileSend.countSendByte += sizePacket;
+                                int bufferSize = 512;
 
-                                        int indexF = fileSend.countSendByte;
-                                        SendMsgClient(1032, 1002, new MemoryStream(fileSend.fileByte, indexF, sizePacket, true, true), 1024);
-                                        fileSend.countIteration++;
-                                       // MessageBox.Show("123");
-                                    }
-                                   // MessageBox.Show("321");
-                                    break;
-                                // Закончили отправлять пакеты;
-                                case 2:
-                                    break;
-                                // Уменьшение пакета;
-                                case 3:
-                                    break;
+                                int lengthFile = fileSend.fileByte.Length;
+                              
+                                int nextPacketSize = (lengthFile - bytesSend > bufferSize) ? bufferSize : lengthFile - bytesSend;                            
+
+                                if (bytesSend < lengthFile)
+                                {
+                                    MemoryStream packet = new MemoryStream(new byte[nextPacketSize + 8], 0, nextPacketSize + 8, true, true);
+                                    
+                                  //  MessageBox.Show(packet.GetBuffer()[2].ToString() + "   " + fileSend.fileByte[2]);
+                                    SendFile(520, 1002, bytesSend , packet, nextPacketSize);
+                                   
+                                }
+                                else
+                                {
+                                    SendMsgClient(16, 1003);
+                                    bytesSend = 0;
+                                }
+
+                                bytesSend += nextPacketSize;
+
+          
+                                //      int indexF = fileSend.countSendByte;
+                                //      SendMsgClient(1032, 1002, new MemoryStream(fileSend.fileByte, indexF, sizePacket, true, true), 1024);
+                                //      fileSend.countIteration++;
+
                             }
-
                             #endregion
                             break;
 
@@ -149,7 +155,7 @@ namespace ClientServerDiplom
                 }
 
             }
-            catch(Exception ex)
+          /*  catch(Exception ex)
             {
                 MessageBox.Show("GettingAnswerServer  :  " + ex.Message);
 
@@ -162,7 +168,7 @@ namespace ClientServerDiplom
                     }));
                 }
                 catch { }
-            }
+            }*/
             finally
             {
                 Thread.CurrentThread.Abort();                
@@ -208,18 +214,22 @@ namespace ClientServerDiplom
             serverSocket.Send(msTF.GetBuffer());
         }
 
+
         /// <summary>
         /// Отправляем файл Серверу
         /// </summary>    
         /// <param name="memoryBit">Кол-во памяти</param>
         /// <param name="idOperation">Идентификатор опирации</param>
+        /// <param name="countSendByte">Количество отправленных байт</param>
         /// <param name="sendPacket">Байты пакета</param>
-        /// <param name="countSendByte">Количество отправленных байтов</param>
-        public static void SendMsgClient(int memoryBit, int idOperation, MemoryStream sendPacket, int countSendByte)
+        /// <param name="countSendByte">Количество отправляемых байт</param>
+        public static void SendFile(int memoryBit, int idOperation, int countSendingByte ,MemoryStream sendPacket, int countSendByte)
         {
             BinaryWriter writer = new BinaryWriter(sendPacket);
             writer.Write(idOperation);  
             writer.Write(countSendByte);
+            
+            Buffer.BlockCopy(fileSend.fileByte, countSendingByte, sendPacket.GetBuffer(), 8, countSendByte);
 
             serverSocket.Send(sendPacket.GetBuffer());
         }
