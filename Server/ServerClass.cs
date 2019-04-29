@@ -21,6 +21,7 @@ namespace ServerDiplom
 
         public static int nextID = 0; // Уникальный id юзера;
 
+        public static readonly string pathProjectFile = (Environment.CurrentDirectory + @"\Project File"); // Путь к файлам пользователей которые храняться на сервере;
 
         static void Main(string[] args)
         {
@@ -73,7 +74,16 @@ namespace ServerDiplom
 
                         switch (idOperationMySql)
                         {
-                            //Connect 1.
+
+                            #region Работа с базой и сервером (1 - 999)
+
+                            // Disconnect -1.
+                            case -1:
+                                login = reader.ReadString();
+                                OperationServerAtClient.Disconnect(login);
+                                break;
+
+                            // Connect 1.
                             case 1:
                                 login = reader.ReadString();
                                 password = reader.ReadString();
@@ -121,7 +131,9 @@ namespace ServerDiplom
                                 OperationServerAtClient.UpdateInfoAboutPerson(login, infoUser);
                                 break;
 
-                            #region Работа с получением файлов
+                            #endregion 
+
+                            #region Работа с файлами которые храняться на сервере (1000 - 1999) 
 
                             // Получение свойств файла от клиента;
                             case 1001:
@@ -171,19 +183,56 @@ namespace ServerDiplom
                                 {
                                     if (fileSend.user.socket == client)
                                     {
-                                        string nameFile = fileSend.nameF + fileSend.extensionFile;
+                                        string directoryUser = pathProjectFile + "\\" + fileSend.user.name;
+
+                                        if (!Directory.Exists(Path.GetExtension(directoryUser)))
+                                        {
+                                            Directory.CreateDirectory(directoryUser);
+                                        }
+                                        string nameFile = directoryUser + "\\" + fileSend.nameF + fileSend.extensionFile;
+
+                                        OperationServerAtClient.AddNewProject(fileSend.user.name,(fileSend.nameF + fileSend.extensionFile));
+
                                         File.WriteAllBytes(nameFile, fileSend.progressSend);
                                         fileSettList.Remove(fileSend);
-                                    }
+                                
                                         break;
+                                    }
+                                        
                                 }                               
                                 break;
+
+                            // Удаление файла с архива;
+                            case 1004:
+                                foreach (var clientU in clients)
+                                {
+                                    if (clientU.socket == client)
+                                    {
+                                        string directoryUser = pathProjectFile + "\\" + clientU.name;
+
+                                        string nameFile = reader.ReadString();
+                                        WriteConsoleMsg(clientU.name + " удалил файл : " + nameFile);
+        
+                                        string fullPathFile = directoryUser + "\\" + nameFile;
+
+                                        OperationServerAtClient.DeleteProjectDatabase(clientU.name, nameFile);
+                                        File.Delete(fullPathFile);
+
+                                        break;
+                                    }                                
+                                }
+                                break;
+                            // Получение списка проектов у данного пользователя;
+                            case 1005:
+                                OperationServerAtClient.GetListProject(client, reader.ReadString());                                                          
+                                break;
                                 #endregion
+
                         }
                     }
                 }
             }
-          /*  catch (Exception ex)
+            catch (Exception ex)
             {
                 if (client != null)
                 {
@@ -198,10 +247,8 @@ namespace ServerDiplom
                         }
                     }
                 }
-                Console.WriteLine();
-                Console.WriteLine(ex.Message);
-                Console.WriteLine();
-            }*/
+                WriteConsoleMsg(ex.Message);
+            }
             finally
             {            
                 Thread.CurrentThread.Abort();          
@@ -209,6 +256,16 @@ namespace ServerDiplom
            
         }
 
+        /// <summary>
+        /// Печать в консоль сообщение
+        /// </summary>
+        /// <param name="message">Текст сообщения</param>
+        public static void WriteConsoleMsg(string message)
+        {
+            Console.WriteLine();
+            Console.WriteLine(message);
+            Console.WriteLine();
+        }
        
         /// <summary>
         /// Отправляет ответ Клиенту

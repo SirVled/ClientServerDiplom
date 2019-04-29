@@ -26,13 +26,11 @@ namespace Server
 
         public int sizeF { get; private set; } // Размер файла;
 
-        public int countIteration = 0;
-
         public byte[] progressSend; // Прогресс отправки файла; 
 
-        public int progress { get; set; }
+        public int progress { get; set; } // Количество полученных байт;
 
         public Client user  { get; private set; } // Отправитель;
-
+     
     }
 }

@@ -23,9 +23,7 @@ namespace ClientServerDiplom
 
         public int countSendByte { get; set; } // Количество отправленных байтов;
 
-        public int countIteration = 0; // Количество пакетов которые были отправлены на сервер; 
+        public const int bufferSize = 512; // Максимальный размер пакета, который будет отправляться на сервер; 
 
-        public int countIterationError = 0; // Количество ошибок в одной последовательности итераций в передаче файла к серверу;  
-       
     }
 }

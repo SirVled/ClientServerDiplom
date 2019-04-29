@@ -1,4 +1,5 @@
-﻿using ServerDiplom;
+﻿
+using ServerDiplom;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +9,8 @@ namespace Server
 {
     public abstract class OperationServerAtClient
     {
+
+        #region База - Сервер
 
         /// <summary>
         /// Читает данные о пользователе и отправляет ответ клиенту
@@ -127,6 +130,74 @@ namespace Server
             MySqlClass.MySQLIn("UpdateInfoAboutPerson", arrParm, arrParmData);
         }
 
+        #region Проекты/файлы пользователя
+
+        /// <summary>
+        /// Добавление свойства проекта в базу
+        /// </summary>
+        /// <param name="login">Логин пользователя</param>
+        /// <param name="nameProject">Имя проекта</param>
+        public static void AddNewProject(string login, string nameProject)
+        {
+            string[] arrParm = { "@nameUserIn", "@nameProjectIn", "@datePublication" };
+            string[] arrParmData = { login, nameProject , DateTime.Now.ToString("yyyy-MM-dd") };
+            MySqlClass.MySQLIn("AddProject", arrParm, arrParmData);
+        }
+
+        /// <summary>
+        /// Удаление свойств проекта из базы
+        /// </summary>
+        /// <param name="login">Логин пользователя</param>
+        /// <param name="nameProject">Имя проекта</param>
+        public static void DeleteProjectDatabase(string login, string nameProject)
+        {
+            string[] arrParm = { "@nameUserIn", "@nameProjectIn" };
+            string[] arrParmData = { login, nameProject};
+            MySqlClass.MySQLIn("DeleteProject", arrParm, arrParmData);
+        }
+
+        /// <summary>
+        /// Получение списка проектов и файлов сохраненные на серевер у данного пользователя
+        /// </summary>
+        /// <param name="client">Сокет клиента</param>
+        /// <param name="login">Логин</param>
+        public static void GetListProject(Socket client, string login)
+        {
+            try
+            {
+                string quary = "select Project.*, ViewApplication.Name from Project " +
+                                       "inner join HistoryDownload on HistoryDownload.idProject = Project.idProject " +
+                                       "inner join Person on Person.idPerson = HistoryDownload.idPerson " +
+                                       "inner join `User` on `User`.idUser = Person.idUser " +
+                                       "inner join ViewApplication on ViewApplication.idViewApplication = Project.idViewApplication " +
+                         $"where `User`.Login = '{login}' ";
+
+                MySqlClass.mySQLConn.Open();
+
+                MySql.Data.MySqlClient.MySqlDataReader reader = (new MySql.Data.MySqlClient.MySqlCommand(quary, MySqlClass.mySQLConn)).ExecuteReader();
+         
+                while (reader.Read())
+                {
+                    string name = reader.GetString(2);
+                    int countVote = reader.GetInt32(3);
+                    double rating = reader.GetDouble(4);
+                    string date = reader.GetDateTime(5).ToString("dd-MM-yyyy");
+                  
+                    string note = (reader.IsDBNull(7) == true) ? string.Empty : reader.GetString(7);
+                    string image = (reader.IsDBNull(8) == true) ? string.Empty : reader.GetString(8);
+
+                    string viewApplication = reader.GetString(9);
+                  
+                    ServerClass.SendMsgClient(client, 2048, 1002, name, countVote, rating, date, note, image, viewApplication);
+                }
+            }
+            catch(Exception ex) { ServerClass.WriteConsoleMsg("GetListProject : " + ex.Message); }
+            finally { MySqlClass.mySQLConn.Close(); }
+        }
+
+        #endregion 
+
+        #endregion
 
         /// <summary>
         /// Получение файлов от клиента (по пакетам)
@@ -166,6 +237,22 @@ namespace Server
             };
 
             ServerClass.clients.Add(cl);
+        }
+
+        /// <summary>
+        /// Удаление пользователя с списка
+        /// </summary>
+        /// <param name="loginUser">Логин пользователя</param>
+        public static void Disconnect(string loginUser)
+        {
+            foreach(var client in ServerClass.clients)
+            {
+                if(client.name.Equals(loginUser))
+                {
+                    ServerClass.clients.Remove(client);
+                    break;
+                }
+            }
         }
     }
 }

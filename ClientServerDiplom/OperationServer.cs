@@ -31,14 +31,13 @@ namespace ClientServerDiplom
         {
             Socket soket = (Socket)soketClient;
 
-            MemoryStream ms = new MemoryStream(new byte[256], 0, 256, true, true);
+            MemoryStream ms = new MemoryStream(new byte[2048], 0, 2048, true, true);
             BinaryReader reader = new BinaryReader(ms);
             int bytesSend = 0;
             try
             {
                 while (true)
                 {
-
                     soket.Receive(ms.GetBuffer());
                     ms.Position = 0;
 
@@ -80,7 +79,7 @@ namespace ClientServerDiplom
                             break;
 
                         case 3:
-                            #region Получение ответа от сервера насчёт данных о нашем пользователе (CheckFullInfoOfPerson 2)
+                            #region Получение ответа от сервера насчёт данных о данном пользователе (CheckFullInfoOfPerson 2)
 
                             Person.name = reader.ReadString();
                             Person.lastname = reader.ReadString();
@@ -106,41 +105,45 @@ namespace ClientServerDiplom
                             break;
 
 
-                        #region Передача файлов
-                          
+                        #region Работа с файлами (1000 - 1999)
+
                         case 1001:
                             #region Отправка файла серверу
 
                             if (fileSend != null && fileSend.fileByte.Length != 0)
-                            {
-                                int bufferSize = 512;
-
-                                int lengthFile = fileSend.fileByte.Length;
-                              
-                                int nextPacketSize = (lengthFile - bytesSend > bufferSize) ? bufferSize : lengthFile - bytesSend;                            
+                            {                               
+                                int lengthFile = fileSend.fileByte.Length;                         
+                                int nextPacketSize = (lengthFile - bytesSend > FileSend.bufferSize) ? FileSend.bufferSize : lengthFile - bytesSend;                            
 
                                 if (bytesSend < lengthFile)
                                 {
                                     MemoryStream packet = new MemoryStream(new byte[nextPacketSize + 8], 0, nextPacketSize + 8, true, true);
                                     
-                                  //  MessageBox.Show(packet.GetBuffer()[2].ToString() + "   " + fileSend.fileByte[2]);
-                                    SendFile(520, 1002, bytesSend , packet, nextPacketSize);
-                                   
+                                    SendFile(520, 1002, bytesSend , packet, nextPacketSize);                         
                                 }
                                 else
                                 {
                                     SendMsgClient(16, 1003);
                                     bytesSend = 0;
                                 }
-
                                 bytesSend += nextPacketSize;
-
-          
-                                //      int indexF = fileSend.countSendByte;
-                                //      SendMsgClient(1032, 1002, new MemoryStream(fileSend.fileByte, indexF, sizePacket, true, true), 1024);
-                                //      fileSend.countIteration++;
-
                             }
+                            #endregion
+                            break;
+
+                        case 1002:
+                            #region  Получение списка проектов сохраненные на сервере;
+
+                            string name = reader.ReadString();
+                            int countVote = reader.ReadInt32();
+                            double rating = reader.ReadDouble();
+                            string date = reader.ReadString();
+                            string note = reader.ReadString();
+                            string image = reader.ReadString();
+                            string viewApplication = reader.ReadString();
+
+                            Person.listProject.Add(new Project(name, countVote, rating, date, viewApplication, note, image));
+                         
                             #endregion
                             break;
 
@@ -155,7 +158,7 @@ namespace ClientServerDiplom
                 }
 
             }
-          /*  catch(Exception ex)
+            catch(Exception ex)
             {
                 MessageBox.Show("GettingAnswerServer  :  " + ex.Message);
 
@@ -168,7 +171,7 @@ namespace ClientServerDiplom
                     }));
                 }
                 catch { }
-            }*/
+            }
             finally
             {
                 Thread.CurrentThread.Abort();                
@@ -201,17 +204,21 @@ namespace ClientServerDiplom
         /// <param name="sendArrData">Данные который получит сервер</param>
         public static void SendMsgClient( int memoryBit, int idOperation, params dynamic[] sendArrData)
         {
-            MemoryStream msTF = new MemoryStream(new byte[memoryBit], 0, memoryBit, true, true);
-            BinaryWriter writer = new BinaryWriter(msTF);
-
-            writer.Write(idOperation);
-            
-            for (int i = 0; i < sendArrData.Length; i++)
+            try
             {
-                if(sendArrData[i].GetType() != typeof(MemoryStream))
-                    writer.Write(sendArrData[i]);            
+                MemoryStream msTF = new MemoryStream(new byte[memoryBit], 0, memoryBit, true, true);
+                BinaryWriter writer = new BinaryWriter(msTF);
+
+                writer.Write(idOperation);
+
+                for (int i = 0; i < sendArrData.Length; i++)
+                {
+                    if (sendArrData[i].GetType() != typeof(MemoryStream))
+                        writer.Write(sendArrData[i]);
+                }
+                serverSocket.Send(msTF.GetBuffer());
             }
-            serverSocket.Send(msTF.GetBuffer());
+            catch(Exception ex)  { MessageBox.Show("SendMsgClient : " + ex.Message); }
         }
 
 

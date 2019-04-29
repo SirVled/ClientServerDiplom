@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static ClientServerDiplom.Project;
 
 namespace ClientServerDiplom
 {
@@ -37,8 +38,15 @@ namespace ClientServerDiplom
         /// <param name="sender">Window</param>
         /// <param name="e">Loaded</param>
         private void Start(object sender, RoutedEventArgs e)
-        {
-            myItems.Add(SetNewInfoAtListView(++countProject, "123", "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 5));
+        {     
+            foreach(var item in Person.listProject)
+            {
+                item.projectSettings.idProject = ++countProject;
+                myItems.Add(item.projectSettings);
+            }
+            
+            //MessageBox.Show(Person.listProject.OfType<MyItemProject>().ToList().ToString() + "     " + myItems.ToString());
+            // myItems.Add(SetNewInfoAtListView(++countProject, "123", "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 5));
             RefreshListView(myItems);        
         }
 
@@ -79,10 +87,19 @@ namespace ClientServerDiplom
         /// <param name="sender">Button</param>
         /// <param name="e">Click</param>
         private void DeleteProject(object sender, RoutedEventArgs e)
-        {
+        {           
+            foreach(var selectValue in myItems)
+            {
+                if(selectValue.Equals((MyItemProject)listViewProjects.SelectedValue))
+                {
+                    OperationServer.SendMsgClient(128, 1004, selectValue.nameProject);
+                    break;
+                }
+            }
+
             myItems?.Remove((MyItemProject)listViewProjects.SelectedValue);
             RefreshListView(myItems);
-
+       
             MessageBox.Show("Проект успешно удален!");
         }
 
@@ -109,7 +126,7 @@ namespace ClientServerDiplom
                 {
                     if (CheckForDuplicateNames(fullName[fullName.Length - 1]))
                     {
-                        myItems.Add(SetNewInfoAtListView(++countProject, fullName[fullName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                        myItems.Add(new MyItemProject(++countProject, fullName[fullName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                         RefreshListView(myItems);
 
                         byte[] arrByte = File.ReadAllBytes(project.FileName);
@@ -146,7 +163,7 @@ namespace ClientServerDiplom
                     {
                         if (CheckForDuplicateNames(fileName[fileName.Length - 1]))
                         {
-                            myItems.Add(SetNewInfoAtListView(++countProject, fileName[fileName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                            myItems.Add(new MyItemProject(++countProject, fileName[fileName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                             RefreshListView(myItems);
 
                             string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
@@ -198,43 +215,8 @@ namespace ClientServerDiplom
         {
             listViewProjects.ItemsSource = myItems;
             listViewProjects.Items.Refresh();
-        }
-
-        /// <summary>
-        /// Создает колонку с информацией в ListView
-        /// </summary>
-        /// <param name="id">Номер проекта</param>
-        /// <param name="name">Имя проекта</param>
-        /// <param name="status">Статус проекта</param>
-        /// <param name="date">Дата добавление проекта</param>
-        /// <param name="rating">Рейтинг проекта</param>
-        /// <returns>Информация о проекте</returns>
-        private MyItemProject SetNewInfoAtListView(int id, string name , string status, string date, int rating)
-        {
-            MyItemProject myProject = new MyItemProject
-            {
-                idProject = id,
-                nameProject = name,
-                statusProject = status,
-                dateAddingProject = date,
-                ratingProject = rating
-            };
-       
-            return myProject;
-        }   
+        }     
     }
 
-    /// <summary>
-    /// Класс который хранит в себе данные которые нужно добавить в ListView
-    /// </summary>
-    class MyItemProject
-    {
-        public int idProject { get; set; } // id проекта;
-        public string nameProject { get; set; } // Панель с именем проекта;
-
-        public string statusProject { get; set; } // Статус проекта;
-        public string dateAddingProject { get; set; } // Дата добавление проекта;
-
-        public int ratingProject { get; set; } // Рейтинг проекта;
-    }
+    
 }

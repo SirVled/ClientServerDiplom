@@ -37,7 +37,12 @@ namespace ClientServerDiplom
                    OperationServer.thread.Abort();
 
                 if (OperationServer.serverSocket != null)
+                {
+                    if(Person.login != null)
+                        OperationServer.SendMsgClient(4, -1, Person.login);
+
                     OperationServer.serverSocket.Close();
+                }
             };         
         }
 
@@ -89,7 +94,9 @@ namespace ClientServerDiplom
         {        
             thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
             {              
-                (new PersonalArea()).Show();            
+                (new PersonalArea()).Show();
+                Person.listProject = new System.Collections.Generic.List<Project>();
+                OperationServer.SendMsgClient(128, 1005, Person.login);
                 thisWindow.Close();
             }));
         }

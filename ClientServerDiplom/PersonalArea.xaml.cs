@@ -90,6 +90,8 @@ namespace ClientServerDiplom
         /// <param name="e">Click</param>
         private void LogoutUser(object sender, RoutedEventArgs e)
         {
+
+            OperationServer.SendMsgClient(128, -1, Person.login);
             (new Authorization()).Show();
             Close();
         }
