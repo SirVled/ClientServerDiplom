@@ -5,16 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClientServerDiplom"
         mc:Ignorable="d"
-        Title="YourProject" Height="450" Width="820" MinWidth="700" MinHeight="400" Loaded="Start">
+        Title="YourProject" Height="450" Width="830" MinWidth="700" MinHeight="400" Loaded="Start">
     <Grid>
         <Grid.Effect>
             <DropShadowEffect Opacity="0.3"/>
         </Grid.Effect>
-        <StackPanel Orientation="Horizontal"  Margin="20,0,0,21" HorizontalAlignment="Left" Width="600" Height="33" VerticalAlignment="Bottom">
+        <StackPanel Orientation="Horizontal"  Margin="20,0,0,21" HorizontalAlignment="Left"  Height="33" VerticalAlignment="Bottom">
             <Button Content="Назад" HorizontalAlignment="Left" Width="80" Click="GoToBack" Height="33" VerticalAlignment="Bottom"/>
-            <Button Margin="120,0,0,0" HorizontalAlignment="Left" Content="Добавить новый проект" Width="161" Click="AddNewProject" Height="33" VerticalAlignment="Bottom"/>
+            <Button Margin="100,0,0,0" HorizontalAlignment="Left" Content="Добавить новый проект" Width="161" Click="AddNewProject" Height="33" VerticalAlignment="Bottom"/>
             <Button x:Name="settingButProject" HorizontalAlignment="Left" Margin="20,0,0,0" Content="Настроить проект" Width="123" IsEnabled="False" Height="33" VerticalAlignment="Bottom"/>
-            <Button x:Name="deleteButProject" HorizontalAlignment="Left" Margin="20,0,0,0" Content="Удалить" Width="75" IsEnabled="False" Click="DeleteProject" Height="33" VerticalAlignment="Bottom"/>
+            <Button x:Name="deleteButProject" HorizontalAlignment="Left" Margin="20,0,15,0" Content="Удалить" Width="75" IsEnabled="False" Click="DeleteProject" Height="33" VerticalAlignment="Bottom"/>
+            <StackPanel x:Name="panelLoad" HorizontalAlignment="Left" Height="33"  VerticalAlignment="Top" Width="192" Visibility="Hidden">
+                <TextBlock x:Name="loadNameProj"></TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock >Загрузка :</TextBlock>
+                    <ProgressBar x:Name="loadProgressPB" Margin="10,0,5,0" Width="90" Height="10" Value="0"></ProgressBar>
+                    <TextBlock x:Name="loadProgressTB"></TextBlock>
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
 
 
@@ -32,9 +40,15 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Width="100"  DisplayMemberBinding="{Binding Path=statusProject}">Статус</GridViewColumn>
+                    <GridViewColumn Width="150" Header="Статус">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Label Foreground="Blue" FontFamily="Cambria"  >Загружен</Label>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Width="175"  DisplayMemberBinding="{Binding Path=dateAddingProject}">Дата добавления</GridViewColumn>
-                    <GridViewColumn Width="150"  DisplayMemberBinding="{Binding Path=ratingProject}">Рейтинг</GridViewColumn>
+                    <GridViewColumn Width="140"  DisplayMemberBinding="{Binding Path=ratingProject}">Рейтинг</GridViewColumn>
                     <GridViewColumn Header=""  >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -56,9 +70,11 @@
                             <Setter Property="Visibility" Value="Hidden"></Setter>
                         </DataTrigger>
                     </Style.Triggers>
-                
+
                 </Style>
             </ListView.Resources>
         </ListView>
+        
+
     </Grid>
 </Window>

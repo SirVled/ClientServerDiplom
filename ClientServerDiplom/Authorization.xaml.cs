@@ -43,6 +43,7 @@ namespace ClientServerDiplom
 
                     OperationServer.serverSocket.Close();
                 }
+               
             };         
         }
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,9 +28,19 @@ namespace ClientServerDiplom
             InitializeComponent();
         }
 
-        private int countProject = 0; // Количество проектов;
-        private List<MyItemProject> myItems = new List<MyItemProject>(); // Список проектов в листе;
+        private static int countProject = 0; // Количество проектов;
+        private static List<MyItemProject> myItems = new List<MyItemProject>(); // Список проектов в листе;
 
+
+        #region Работа с отображением информации о прогрессе отправки файла на сервер
+
+        private static ListView listStatic { get; set; } // Лист с проектами;
+        private static StackPanel panelLoading { get; set; } // Панель загрузки;
+        public static ProgressBar loadUIPB { get; set; } // Элемент отображения информации о прогрессе загрузки проекта;
+        public static TextBlock loadUITB { get; set; } // Отображение процент прогресса;
+        public static TextBlock nameProjectLoadUI { get; set; } // Имя проекта который отправляется на сервер;
+
+        #endregion
         #region Нажатия на кнопки и другие действие привязанные к объктам на форме
 
         /// <summary>
@@ -38,13 +49,17 @@ namespace ClientServerDiplom
         /// <param name="sender">Window</param>
         /// <param name="e">Loaded</param>
         private void Start(object sender, RoutedEventArgs e)
-        {     
-            foreach(var item in Person.listProject)
+        {
+            countProject = 0;
+            myItems.Clear();
+
+            foreach (var item in Person.listProject)
             {
                 item.projectSettings.idProject = ++countProject;
                 myItems.Add(item.projectSettings);
             }
-            
+
+            listStatic = listViewProjects;
             //MessageBox.Show(Person.listProject.OfType<MyItemProject>().ToList().ToString() + "     " + myItems.ToString());
             // myItems.Add(SetNewInfoAtListView(++countProject, "123", "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 5));
             RefreshListView(myItems);        
@@ -115,7 +130,6 @@ namespace ClientServerDiplom
                 FileName = string.Empty,
                // Filter = "Project files| *.zip"
             };
-
             bool? result = project.ShowDialog();
 
             if(result == true)
@@ -125,22 +139,20 @@ namespace ClientServerDiplom
                 if (fullName[fullName.Length - 1].Length <= 45)
                 {
                     if (CheckForDuplicateNames(fullName[fullName.Length - 1]))
-                    {
-                        myItems.Add(new MyItemProject(++countProject, fullName[fullName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
-                        RefreshListView(myItems);
-
+                    {                       
                         byte[] arrByte = File.ReadAllBytes(project.FileName);
 
                         string[] nameSendFile = fullName[fullName.Length - 1].Split('.');
                         OperationServer.fileSend = new FileSend(arrByte, nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
-  
-                        MessageBox.Show("Файл(ы) успешно добавлен(ы)!");
+
+                        SetSettingsPanelLoad(fullName[fullName.Length - 1]);
                     }
                 }
                 else
                     MessageBox.Show("Длина имени файла не должна превышать 45 символов");
             }
         }
+
 
         /// <summary>
         /// Drop файла в лист проектов 
@@ -163,13 +175,15 @@ namespace ClientServerDiplom
                     {
                         if (CheckForDuplicateNames(fileName[fileName.Length - 1]))
                         {
-                            myItems.Add(new MyItemProject(++countProject, fileName[fileName.Length - 1], "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                            myItems.Add(new MyItemProject(++countProject, fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                             RefreshListView(myItems);
 
                             string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
 
                             OperationServer.fileSend = new FileSend(File.ReadAllBytes(fileDrop[0]), nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
-                            MessageBox.Show("Файл(ы) успешно добавлены!");
+
+                            SetSettingsPanelLoad(fileName[fileName.Length - 1]);
+                            
                         }                   
                     }
                     else
@@ -187,6 +201,51 @@ namespace ClientServerDiplom
         }
 
         #endregion
+
+
+        /// <summary>
+        /// Установка панели с загрузкой файла
+        /// </summary>
+        /// <param name="nameProject">Имя файла</param>
+        private void SetSettingsPanelLoad(string nameProject)
+        {
+            panelLoading = panelLoad;
+            panelLoad.Visibility = Visibility.Visible;
+            loadNameProj.Text = nameProject;
+            loadProgressPB.Value = 0;
+            loadProgressTB.Text = loadProgressPB.Value + "%";
+
+            nameProjectLoadUI = loadNameProj;
+            loadUIPB = loadProgressPB;
+            loadUITB = loadProgressTB;
+        }
+
+        /// <summary>
+        /// Устанавливает значение для прогресс загрузки проекта
+        /// </summary>
+        /// <param name="temp">Прогресс</param>
+        public static void SetValueProgressLoad(int temp)
+        {
+            loadUIPB.Dispatcher.Invoke(new ThreadStart(async () =>
+            {
+                loadUIPB.Value = temp;
+                loadUITB.Text = temp + "%";
+
+                if(temp >= 100)
+                {
+                    loadUIPB = null;
+                    loadUITB = null;
+
+                    myItems.Add(new MyItemProject(++countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                    RefreshListView(myItems);
+
+                    MessageBox.Show("Файл успешно добавлен!");
+                    await Task.Delay(10000);
+                    panelLoading.Visibility = Visibility.Hidden;
+                }
+            }));
+        }
+
 
         /// <summary>
         /// Проверка на повторяющиеся имена в листе с проектами
@@ -211,10 +270,10 @@ namespace ClientServerDiplom
         /// Обновляет таблицу с проектами
         /// </summary>
         /// <param name="myItems">Данные которые будут отображатся в ListView</param>
-        private void RefreshListView(List<MyItemProject> myItems)
+        private static void RefreshListView(List<MyItemProject> myItems)
         {
-            listViewProjects.ItemsSource = myItems;
-            listViewProjects.Items.Refresh();
+            listStatic.ItemsSource = myItems;
+            listStatic.Items.Refresh();
         }     
     }
 

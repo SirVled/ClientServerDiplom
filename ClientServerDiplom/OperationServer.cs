@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace ClientServerDiplom
 {
@@ -124,9 +125,16 @@ namespace ClientServerDiplom
                                 else
                                 {
                                     SendMsgClient(16, 1003);
-                                    bytesSend = 0;
+                                    bytesSend = 0;                               
                                 }
                                 bytesSend += nextPacketSize;
+
+                                if (YourProject.loadUIPB != null)
+                                {
+                                    double percent = ((double)bytesSend / lengthFile) * 100;       
+                                    YourProject.SetValueProgressLoad((int)percent);
+                                }
+                                
                             }
                             #endregion
                             break;
