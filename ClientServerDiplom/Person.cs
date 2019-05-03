@@ -71,6 +71,11 @@ namespace ClientServerDiplom
             this.image = image;
         }
 
+        public Project(MyItemProject myItem)
+        {
+            projectSettings = myItem;
+        }
+
         public MyItemProject projectSettings; // Проект;
 
         public int countVote { get; set; } // Количество голосов у проекта;

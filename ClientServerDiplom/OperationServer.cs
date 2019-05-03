@@ -63,24 +63,24 @@ namespace ClientServerDiplom
                             break;
 
                         case 2:
-                            #region Проверка на повторяющийся логин (CheckDataUser 1)
+                            #region Проверка на повторяющийся логин (CheckDataUser 2)
 
                             switch (reader.ReadBoolean())
                             {
                                 case true:
                                     MessageBox.Show("Регистрация прошла успешно!");
-                                    Regestration.CreateNewPerson();
+                                    Authorization.CreateNewPerson();
                                     break;
 
                                 case false:
-                                    MessageBox.Show("Такой логин уже существует!");
+                                    MessageBox.Show("Такой логин\\email уже существует!");
                                     break;
                             }
                             #endregion
                             break;
 
                         case 3:
-                            #region Получение ответа от сервера насчёт данных о данном пользователе (CheckFullInfoOfPerson 2)
+                            #region Получение ответа от сервера насчёт данных о данном пользователе (CheckFullInfoOfPerson 3)
 
                             Person.name = reader.ReadString();
                             Person.lastname = reader.ReadString();
@@ -94,7 +94,9 @@ namespace ClientServerDiplom
                             break;
 
                         case 4:
-
+                            #region Проверка на наличие введенной почты в базе (CheckUnique 4)
+                            SendMailPass.thisWindow.ShowPanelCode(!reader.ReadBoolean());
+                            #endregion
                             break;
 
                         case 5:
@@ -105,6 +107,11 @@ namespace ClientServerDiplom
                             #endregion
                             break;
 
+                        case 6:
+                            #region Получение ответ от сервера по поводу отправки кода восстановления;
+                            SendMailPass.codeU = reader.ReadInt32();
+                            #endregion
+                            break;
 
                         #region Работа с файлами (1000 - 1999)
 
@@ -166,20 +173,20 @@ namespace ClientServerDiplom
                 }
 
             }
-            catch(Exception ex)
-            {
-                MessageBox.Show("GettingAnswerServer  :  " + ex.Message);
+            //catch(Exception ex)
+            //{
+            //    MessageBox.Show("GettingAnswerServer  :  " + ex.Message);
 
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(new ThreadStart(()=> 
-                    {                  
-                        Application.Current.Shutdown();
+            //    try
+            //    {
+            //        Application.Current.Dispatcher.Invoke(new ThreadStart(()=> 
+            //        {                  
+            //            Application.Current.Shutdown();
                     
-                    }));
-                }
-                catch { }
-            }
+            //        }));
+            //    }
+            //    catch { }
+            //}
             finally
             {
                 Thread.CurrentThread.Abort();                
@@ -212,8 +219,8 @@ namespace ClientServerDiplom
         /// <param name="sendArrData">Данные который получит сервер</param>
         public static void SendMsgClient( int memoryBit, int idOperation, params dynamic[] sendArrData)
         {
-            try
-            {
+           // try
+            //{
                 MemoryStream msTF = new MemoryStream(new byte[memoryBit], 0, memoryBit, true, true);
                 BinaryWriter writer = new BinaryWriter(msTF);
 
@@ -225,8 +232,8 @@ namespace ClientServerDiplom
                         writer.Write(sendArrData[i]);
                 }
                 serverSocket.Send(msTF.GetBuffer());
-            }
-            catch(Exception ex)  { MessageBox.Show("SendMsgClient : " + ex.Message); }
+            //}
+           // catch(Exception ex)  { MessageBox.Show("SendMsgClient : " + ex.Message); }
         }
 
 

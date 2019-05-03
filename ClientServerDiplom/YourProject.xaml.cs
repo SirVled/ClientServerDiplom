@@ -112,7 +112,17 @@ namespace ClientServerDiplom
                 }
             }
 
+            foreach(var item in Person.listProject)
+            {
+                if(item.projectSettings.Equals((MyItemProject)listViewProjects.SelectedValue))
+                {
+                    Person.listProject.Remove(item);
+                    break;
+                }
+            }
+
             myItems?.Remove((MyItemProject)listViewProjects.SelectedValue);
+           
             RefreshListView(myItems);
        
             MessageBox.Show("Проект успешно удален!");
@@ -236,10 +246,12 @@ namespace ClientServerDiplom
                     loadUIPB = null;
                     loadUITB = null;
 
-                    myItems.Add(new MyItemProject(++countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                    MyItemProject myItem = new MyItemProject(++countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
+                    myItems.Add(myItem);
+                    Person.listProject.Add(new Project(myItem));
                     RefreshListView(myItems);
-
                     MessageBox.Show("Файл успешно добавлен!");
+                   
                     await Task.Delay(10000);
                     panelLoading.Visibility = Visibility.Hidden;
                 }
@@ -271,7 +283,7 @@ namespace ClientServerDiplom
         /// </summary>
         /// <param name="myItems">Данные которые будут отображатся в ListView</param>
         private static void RefreshListView(List<MyItemProject> myItems)
-        {
+        {          
             listStatic.ItemsSource = myItems;
             listStatic.Items.Refresh();
         }     

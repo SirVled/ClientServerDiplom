@@ -1,0 +1,32 @@
+﻿<Controls:MetroWindow x:Class="ClientServerDiplom.SendMailPass"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"    
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClientServerDiplom"
+        mc:Ignorable="d"
+        Title="Password recovery" Height="274" Width="455.045" MouseLeftButtonDown="LostFocusUIE" WindowTitleBrush="#FF525C91" TitleCaps="False" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Background="#FF525C91">
+        <Label Content="Восстановление пароля" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,35,0,0" FontFamily="Open Sans" FontSize="14" FontWeight="Bold" FontStyle="Italic"/>
+        <Border x:Name="borderMail" BorderThickness="1" CornerRadius="15" Background="#FF6D738E" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,90,0,0">
+            <TextBox x:Name="emailTB" MaxLength="45" Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="275" GotFocus="GotFocusTB" LostFocus="LostFocusTB" TextChanged="TextValidInput" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White" FontFamily="Open Sans" FontSize="14" Controls:ControlsHelper.FocusBorderBrush="{x:Null}" Controls:ControlsHelper.MouseOverBorderBrush="{x:Null}" Controls:TextBoxHelper.Watermark="Email"/>
+        </Border>
+        <Button x:Name="butOk" Content="OK" HorizontalAlignment="Center" Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Margin="205,179,198,0" VerticalAlignment="Top" Width="46" FontFamily="Open Sans" Background="#FF6D738E" BorderBrush="#FF595959" Height="43" FontWeight="Bold" IsEnabled="False" Click="OkBut"/>
+
+        <Grid x:Name="panelCode" Visibility="Hidden">
+            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"  Margin="0,180,0,0">
+                <TextBlock x:Name="textMsg" Text="На ### пришел код с потверждением" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Width="260" FontFamily="Times New Roman" FontSize="16" TextDecorations="{x:Null}" FontStyle="Italic" Foreground="Black"/>
+                <Border BorderThickness="1" CornerRadius="15" Background="#FF6D738E" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <TextBox x:Name="code" MaxLength="45" Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="275" GotFocus="GotFocusTB" LostFocus="LostFocusTB" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White" FontFamily="Open Sans" FontSize="14" Controls:ControlsHelper.FocusBorderBrush="{x:Null}" Controls:ControlsHelper.MouseOverBorderBrush="{x:Null}"/>
+                </Border>
+                <Button x:Name="timeCodeBut" Margin="0,10,0,0"  HorizontalAlignment="Center" VerticalAlignment="Top" Width="195" FontFamily="Cambria" Foreground="Black" FontStyle="Italic" IsEnabled="False" Background="#FF555555" BorderBrush="Black" Click="SendMessageMail">
+                    <TextBlock x:Name="codeText" Text="Повторное отравление кода, будет возможно через " TextWrapping="Wrap" TextAlignment="Center"/>
+                </Button>
+            </StackPanel>
+            <Button Content="Подтвердить" HorizontalAlignment="Center"  Margin="0,357,0,0" VerticalAlignment="Top" Width="129" Height="37" Background="#FF6D738E" Click="СonfirmRecovery"/>
+        </Grid>
+        
+        <Label x:Name="errorLb" Opacity="0" Content="Такой email не был найден!" HorizontalAlignment="Center" Margin="0,128,0,0" VerticalAlignment="Top" Foreground="#FFD65D5D" FontSize="14" Visibility="Hidden"/>
+    </Grid>
+</Controls:MetroWindow>

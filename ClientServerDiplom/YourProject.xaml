@@ -65,12 +65,11 @@
             <ListView.Resources>
                 <Style TargetType="{x:Type ListViewItem}">
                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                    <Style.Triggers>
+                     <!--<Style.Triggers>
                         <DataTrigger Binding="{Binding ElementName=listViewProjects, Path=IsVisibility}" Value="True">
                             <Setter Property="Visibility" Value="Hidden"></Setter>
                         </DataTrigger>
-                    </Style.Triggers>
-
+                    </Style.Triggers>-->
                 </Style>
             </ListView.Resources>
         </ListView>

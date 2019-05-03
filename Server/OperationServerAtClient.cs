@@ -30,17 +30,19 @@ namespace Server
         }
 
         /// <summary>
-        /// Проверяет логин на уникальность
+        /// Проверяет логин\email на уникальность
         /// </summary>
         /// <param name="client">Сокет клиента</param>
         /// <param name="login">Логин</param>
-        public static void CheckUniqueLogin(Socket client, string login)
+        /// <param name="email">Почта</param>
+        /// <param name="idOperation">Номер операции которая выполнется в клиенте</param>
+        public static void CheckUnique(Socket client, string login, string email, int idOperation = 2)
         {
-            string[] arrParm = { "@loginIn" , "@loginOutBool" };
-            string[] arrParmData = { login };
-            string[] arrParmOut = MySqlClass.MySQLInOut("CheckUniqueLogin", arrParm, arrParmData);
+            string[] arrParm = { "@loginIn", "@emailIn", "@loginOutBool" };
+            string[] arrParmData = { login, email };
+            string[] arrParmOut = MySqlClass.MySQLInOut("CheckUnique", arrParm, arrParmData);
 
-            ServerClass.SendMsgClient(client, 64, 2, Int32.Parse(arrParmOut[0]));
+            ServerClass.SendMsgClient(client, 64, idOperation, Int32.Parse(arrParmOut[0]));
         }
 
         /// <summary>
@@ -48,10 +50,11 @@ namespace Server
         /// </summary>
         /// <param name="login">Логин</param>
         /// <param name="password">Пароль</param>
-        public static void CreateNewUser(string login, string password)
+        /// <param name="email">Пароль</param>
+        public static void CreateNewUser(string login, string password, string email)
         {
-            string[] arrParm = { "@loginIn", "@passwordIn" };
-            string[] arrParmData = { login, password };
+            string[] arrParm = { "@loginIn", "@passwordIn", "@emailIn" };
+            string[] arrParmData = { login, password , email};
             MySqlClass.MySQLIn("AddUser", arrParm, arrParmData);
         }
 
@@ -128,6 +131,18 @@ namespace Server
             string[] arrParm = { "@loginIn", "@nameIn", "@lastnameIn", "@imageIn", "@emailIn" };
             string[] arrParmData = { login, infoUser[0], infoUser[1], infoUser[2], infoUser[3] };
             MySqlClass.MySQLIn("UpdateInfoAboutPerson", arrParm, arrParmData);
+        }
+
+        /// <summary>
+        /// Изменение пароля (через восстановление по почте)
+        /// </summary>
+        /// <param name="email">Почта</param>
+        /// <param name="password">Пароль</param>
+        public static void UpdatePasswordMail(string email, string password)
+        {
+            string[] arrParm = { "@emailIn", "@passwordIn", };
+            string[] arrParmData = { email, password };
+            MySqlClass.MySQLIn("UpdatePasswordMail", arrParm, arrParmData);
         }
 
         #region Проекты/файлы пользователя

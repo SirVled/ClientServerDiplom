@@ -69,7 +69,7 @@ namespace ServerDiplom
 
                         int idOperationMySql = reader.ReadInt32();
 
-                        string login, password;
+                        string login, password, email;
                         string[] infoUser = new string[4];
 
                         switch (idOperationMySql)
@@ -93,14 +93,16 @@ namespace ServerDiplom
                             // CheckData 2. Проверка на валидность данных авторизации юзера в базе;
                             case 2:
                                 login = reader.ReadString();
-                                OperationServerAtClient.CheckUniqueLogin(client, login);
+                                email = reader.ReadString();
+                                OperationServerAtClient.CheckUnique(client, login, email);
                                 break;
 
                             // AddUser 3. Добавляет в базу нового пользователя;
                             case 3:
                                 login = reader.ReadString();
                                 password = reader.ReadString();
-                                OperationServerAtClient.CreateNewUser(login, password);
+                                email = reader.ReadString();
+                                OperationServerAtClient.CreateNewUser(login, password, email);
                                 break;
 
                             // InfoUser 4. Узнаем информацию о юзере;
@@ -131,6 +133,32 @@ namespace ServerDiplom
                                 OperationServerAtClient.UpdateInfoAboutPerson(login, infoUser);
                                 break;
 
+
+                            // CheckEmail 101. Проверка почты пользователя;
+                            case 101:
+                                email = reader.ReadString();
+                                OperationServerAtClient.CheckUnique(client, string.Empty, email,4);
+                                break;
+
+                            // SendMailCode 102. Отправка кода восстановления на почту пользователя;
+                            case 102:
+                                email = reader.ReadString();
+                                int code = EmailBot.TextCode();
+
+                                string msg = "Код восстановления : " + code;
+                                EmailBot.SendMail(EmailBot.smtp, EmailBot.mail, EmailBot.password, email, EmailBot.themeMsg, msg);
+                                SendMsgClient(client, 64, 6, code);
+                                break;
+
+                            // UpdatePassword 103. Отправка пароля на почту, и изменение его в базе;
+                            case 103:
+                                email = reader.ReadString();
+                                password = EmailBot.RandomPassword(8);
+                                msg = "Новый пароль : " + password;
+
+                                EmailBot.SendMail(EmailBot.smtp, EmailBot.mail, EmailBot.password, email, EmailBot.themeMsg, msg);
+                                OperationServerAtClient.UpdatePasswordMail(email, password);
+                                break;
                             #endregion 
 
                             #region Работа с файлами которые храняться на сервере (1000 - 1999) 
