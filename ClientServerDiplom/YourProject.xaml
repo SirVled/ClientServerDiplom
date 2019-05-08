@@ -12,13 +12,13 @@
         </Grid.Effect>
         <StackPanel Orientation="Horizontal"  Margin="20,0,0,21" HorizontalAlignment="Left"  Height="33" VerticalAlignment="Bottom">
             <Button Content="Назад" HorizontalAlignment="Left" Width="80" Click="GoToBack" Height="33" VerticalAlignment="Bottom"/>
-            <Button Margin="100,0,0,0" HorizontalAlignment="Left" Content="Добавить новый проект" Width="161" Click="AddNewProject" Height="33" VerticalAlignment="Bottom"/>
+            <Button x:Name="addButProject" Margin="100,0,0,0" HorizontalAlignment="Left" Content="Добавить новый проект" Width="161" Click="AddNewProject" Height="33" VerticalAlignment="Bottom"/>
             <Button x:Name="settingButProject" HorizontalAlignment="Left" Margin="20,0,0,0" Content="Настроить проект" Width="123" IsEnabled="False" Height="33" VerticalAlignment="Bottom"/>
             <Button x:Name="deleteButProject" HorizontalAlignment="Left" Margin="20,0,15,0" Content="Удалить" Width="75" IsEnabled="False" Click="DeleteProject" Height="33" VerticalAlignment="Bottom"/>
             <StackPanel x:Name="panelLoad" HorizontalAlignment="Left" Height="33"  VerticalAlignment="Top" Width="192" Visibility="Hidden">
                 <TextBlock x:Name="loadNameProj"></TextBlock>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock >Загрузка :</TextBlock>
+                    <TextBlock x:Name="nameLoadTB">Загрузка :</TextBlock>
                     <ProgressBar x:Name="loadProgressPB" Margin="10,0,5,0" Width="90" Height="10" Value="0"></ProgressBar>
                     <TextBlock x:Name="loadProgressTB"></TextBlock>
                 </StackPanel>
@@ -52,9 +52,9 @@
                     <GridViewColumn Header=""  >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Button x:Name="deleteThisProject" Visibility="Hidden" Content="" Width="20" Height="20" Click="DeleteProject">
+                                <Button  Content="" Width="30" Height="30" Tag="{Binding Path=idProject}" Click="DownloadFile">
                                     <Button.Background>
-                                        <ImageBrush ImageSource="http://mywishlist.ru/pic/i/wish/orig/008/908/108.png"></ImageBrush>
+                                        <ImageBrush ImageSource="https://icons8.com/iconizer/files/Devine_icons/orig/FTP.png"></ImageBrush>
                                     </Button.Background>
                                 </Button>
                             </DataTemplate>

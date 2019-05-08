@@ -26,6 +26,7 @@ namespace ClientServerDiplom
         public YourProject()
         {
             InitializeComponent();
+            thisWindow = this;
         }
 
         private static int countProject = 0; // Количество проектов;
@@ -33,6 +34,7 @@ namespace ClientServerDiplom
 
 
         #region Работа с отображением информации о прогрессе отправки файла на сервер
+        public static YourProject thisWindow { get; private set; }
 
         private static ListView listStatic { get; set; } // Лист с проектами;
         private static StackPanel panelLoading { get; set; } // Панель загрузки;
@@ -50,6 +52,16 @@ namespace ClientServerDiplom
         /// <param name="e">Loaded</param>
         private void Start(object sender, RoutedEventArgs e)
         {
+            if(OperationServer.fileSend != null)
+            {
+                SetSettingsPanelLoad(this, OperationServer.fileSend.nameFile);
+            }
+
+            if (OperationServer.fileReceiving != null)
+            {
+                SetSettingsPanelLoad(this, OperationServer.fileReceiving.nameFile, false);
+            }
+
             countProject = 0;
             myItems.Clear();
 
@@ -72,8 +84,20 @@ namespace ClientServerDiplom
         /// <param name="e"></param>
         private void GoToBack(object sender, RoutedEventArgs e)
         {
-            (new PersonalArea()).Show();
-            Close();
+            if (OperationServer.fileReceiving != null)
+            {
+                if(MessageBox.Show("Загрузка еще не завершена! Остановить загрузку?","Загрузка",MessageBoxButton.YesNoCancel) == MessageBoxResult.Yes)
+                {
+                    OperationServer.fileReceiving = null;
+                    (new PersonalArea()).Show();
+                    Close();
+                }           
+            }
+            else
+            {
+                (new PersonalArea()).Show();
+                Close();
+            }
         }
 
 
@@ -102,7 +126,12 @@ namespace ClientServerDiplom
         /// <param name="sender">Button</param>
         /// <param name="e">Click</param>
         private void DeleteProject(object sender, RoutedEventArgs e)
-        {           
+        {
+            if((sender as Button).Tag != null)
+            {
+                listViewProjects.SelectedIndex = Int32.Parse((sender as Button).Tag.ToString()) - 1;
+            }
+
             foreach(var selectValue in myItems)
             {
                 if(selectValue.Equals((MyItemProject)listViewProjects.SelectedValue))
@@ -112,15 +141,27 @@ namespace ClientServerDiplom
                 }
             }
 
+            int elementDelete = -1; // Элемент в массиве который будет удалён;
+
+            int temp = -1;
             foreach(var item in Person.listProject)
             {
-                if(item.projectSettings.Equals((MyItemProject)listViewProjects.SelectedValue))
+                if(elementDelete != -1)
                 {
-                    Person.listProject.Remove(item);
-                    break;
+                    item.projectSettings.idProject--;
+                }       
+                else
+                    temp++;
+
+                if (item.projectSettings.Equals((MyItemProject)listViewProjects.SelectedValue))
+                {
+                    //   Person.listProject.Remove(item);
+                    
+                    elementDelete = temp;
                 }
             }
-
+            countProject--;
+            Person.listProject.RemoveAt(elementDelete);
             myItems?.Remove((MyItemProject)listViewProjects.SelectedValue);
            
             RefreshListView(myItems);
@@ -155,7 +196,9 @@ namespace ClientServerDiplom
                         string[] nameSendFile = fullName[fullName.Length - 1].Split('.');
                         OperationServer.fileSend = new FileSend(arrByte, nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
 
-                        SetSettingsPanelLoad(fullName[fullName.Length - 1]);
+                        SetSettingsPanelLoad(this, fullName[fullName.Length - 1]);
+
+                        IsEnabledForm(false);
                     }
                 }
                 else
@@ -192,8 +235,9 @@ namespace ClientServerDiplom
 
                             OperationServer.fileSend = new FileSend(File.ReadAllBytes(fileDrop[0]), nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
 
-                            SetSettingsPanelLoad(fileName[fileName.Length - 1]);
-                            
+                            SetSettingsPanelLoad(this,fileName[fileName.Length - 1]);
+
+                            IsEnabledForm(false);
                         }                   
                     }
                     else
@@ -216,28 +260,45 @@ namespace ClientServerDiplom
         /// <summary>
         /// Установка панели с загрузкой файла
         /// </summary>
+        /// <param name="thisWindow">Текущее окно</param>
         /// <param name="nameProject">Имя файла</param>
-        private void SetSettingsPanelLoad(string nameProject)
+        /// <param name="isSend">Состояние отправки</param>
+        public static void SetSettingsPanelLoad(YourProject thisWindow,  string nameProject = "Error", bool isSend = true)
         {
-            panelLoading = panelLoad;
-            panelLoad.Visibility = Visibility.Visible;
-            loadNameProj.Text = nameProject;
-            loadProgressPB.Value = 0;
-            loadProgressTB.Text = loadProgressPB.Value + "%";
+            thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
+            {
+                panelLoading = thisWindow.panelLoad;
+                thisWindow.panelLoad.Visibility = Visibility.Visible;
+                thisWindow.loadNameProj.Text = nameProject;
+                thisWindow.loadProgressPB.Value = 0;
+                thisWindow.loadProgressTB.Text = thisWindow.loadProgressPB.Value + "%";
 
-            nameProjectLoadUI = loadNameProj;
-            loadUIPB = loadProgressPB;
-            loadUITB = loadProgressTB;
+                if (!isSend)
+                   thisWindow.nameLoadTB.Text = "Загрузка : ";
+                else
+                    thisWindow.nameLoadTB.Text = "Отправка : ";
+
+                nameProjectLoadUI = thisWindow.loadNameProj;
+                loadUIPB = thisWindow.loadProgressPB;
+                loadUITB = thisWindow.loadProgressTB;
+            }));
         }
 
         /// <summary>
         /// Устанавливает значение для прогресс загрузки проекта
         /// </summary>
         /// <param name="temp">Прогресс</param>
-        public static void SetValueProgressLoad(int temp)
+        /// <param name="isLoadFileServer">Загрузка на сервер или из сервера</param>
+        public static void SetValueProgressLoad(int temp, bool isLoadFileServer)
         {
             loadUIPB.Dispatcher.Invoke(new ThreadStart(async () =>
             {
+
+                if (panelLoading.Visibility != Visibility.Visible)
+                {
+                    panelLoading.Visibility = Visibility.Visible;
+                }
+
                 loadUIPB.Value = temp;
                 loadUITB.Text = temp + "%";
 
@@ -246,18 +307,40 @@ namespace ClientServerDiplom
                     loadUIPB = null;
                     loadUITB = null;
 
-                    MyItemProject myItem = new MyItemProject(++countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
-                    myItems.Add(myItem);
-                    Person.listProject.Add(new Project(myItem));
-                    RefreshListView(myItems);
-                    MessageBox.Show("Файл успешно добавлен!");
-                   
+                    if (!isLoadFileServer)
+                    {
+                        MyItemProject myItem = new MyItemProject(++countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
+                        myItems.Add(myItem);
+                        Person.listProject.Add(new Project(myItem));
+                        RefreshListView(myItems);
+                        MessageBox.Show("Файл успешно добавлен!");
+                    }
+                    else
+                    {
+
+                        MessageBox.Show("Файл успешно скачен!");
+                    }
+
+                    IsEnabledForm(true);
+
                     await Task.Delay(10000);
                     panelLoading.Visibility = Visibility.Hidden;
                 }
             }));
         }
 
+        /// <summary>
+        /// Блокировка возможности отравки файла на сервер
+        /// </summary>
+        /// <param name="enabled">Состояние блокировки</param>
+        public static void IsEnabledForm(bool enabled)
+        {
+            thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
+            {
+                thisWindow.addButProject.IsEnabled = enabled;
+                thisWindow.AllowDrop = enabled;
+            }));
+        }
 
         /// <summary>
         /// Проверка на повторяющиеся имена в листе с проектами
@@ -286,7 +369,28 @@ namespace ClientServerDiplom
         {          
             listStatic.ItemsSource = myItems;
             listStatic.Items.Refresh();
-        }     
+        }
+
+        /// <summary>
+        /// Загрузка выбранного файла
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void DownloadFile(object sender, RoutedEventArgs e)
+        {
+            listViewProjects.SelectedIndex = Int32.Parse((sender as Button).Tag.ToString()) - 1;
+
+            foreach (var selectValue in myItems)
+            {
+                if (selectValue.Equals((MyItemProject)listViewProjects.SelectedValue))
+                {
+                    OperationServer.SendMsgClient(256, 1006, Person.login, selectValue.nameProject);
+                    break;
+                }
+            }
+
+            IsEnabledForm(false);
+        }
     }
 
     

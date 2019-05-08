@@ -29,8 +29,6 @@ namespace ClientServerDiplom
             thisWindow = this;
         }
 
-        private Regex regex = new Regex(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"); // Регулярка на проверку почты;
-
         public static SendMailPass thisWindow { get; set; } // Окно
 
         private string mailU { get; set; } // Почта пользователя;
@@ -77,7 +75,7 @@ namespace ClientServerDiplom
         /// <param name="e">TextInput</param>
         private void TextValidInput(object sender, TextChangedEventArgs e)
         {      
-            butOk.IsEnabled = regex.IsMatch((sender as TextBox).Text);           
+            butOk.IsEnabled = StyleUIE.regex.IsMatch((sender as TextBox).Text);           
         }
 
         /// <summary>

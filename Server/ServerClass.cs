@@ -169,7 +169,7 @@ namespace ServerDiplom
                                 {
                                     if(clientS.socket == client)
                                     {
-                                        int sizeFile = reader.ReadInt32();
+                                        uint sizeFile = reader.ReadUInt32();
                                         fileSettList.Add(new FileSett(reader.ReadString(),reader.ReadString(), sizeFile, clientS));
                                         Console.WriteLine("Размер файла : " + sizeFile);
                                         
@@ -187,7 +187,7 @@ namespace ServerDiplom
                                     {
                                         int countRecByte = reader.ReadInt32();
                                         byte[] byteFile = reader.ReadBytes(countRecByte);
-
+                    
                                         if (fileSend.progressSend == null)
                                         {
                                             OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
@@ -250,9 +250,37 @@ namespace ServerDiplom
                                     }                                
                                 }
                                 break;
+
                             // Получение списка проектов у данного пользователя;
                             case 1005:
                                 OperationServerAtClient.GetListProject(client, reader.ReadString());                                                          
+                                break;
+
+                            // Получение массив байт файла который выбрал клиент для скачивания;
+                            case 1006:          
+                                foreach (var user in clients)
+                                {
+                                    if (user.socket == client)
+                                    {
+                                        string nameUser = reader.ReadString();
+                                        string nameFile = reader.ReadString();
+
+                                        string pathFile = $"{pathProjectFile}\\{nameUser}\\{nameFile}";
+
+                                        byte[] fileByte = File.ReadAllBytes(pathFile);
+                                        OperationServerAtClient.listFileSend.Add(new FileSett(nameFile, fileByte, user));
+                                        Console.WriteLine($"{user.name} начиниет получать файл размера : {fileByte.Length}");
+
+                                        SendMsgClient(user.socket, 256, 1003, fileByte.Length,nameFile);
+
+                                        break;
+                                    }
+                                }
+                                break;
+
+                            // Отправка файла по пакетам;
+                            case 1007:
+                                OperationServerAtClient.ContinueSendFile(client);
                                 break;
                                 #endregion
 
@@ -315,5 +343,25 @@ namespace ServerDiplom
             client.Send(msTF.GetBuffer());
         }
 
+        /// <summary>
+        /// Отправляем файл Клиенту
+        /// </summary>    
+        /// <param name="client">Клиент</param>
+        /// <param name="memoryBit">Кол-во памяти</param>
+        /// <param name="idOperation">Идентификатор опирации</param>
+        /// <param name="countSendByte">Количество отправленных байт</param>
+        /// <param name="sendPacket">Байты пакета</param>
+        /// <param name="countSendByte">Количество отправляемых байт</param>
+        /// <param name="file">Файл который отправляем в байтах</param>
+        public static void SendFileClient(Socket client,int memoryBit, int idOperation, int countSendingByte, MemoryStream sendPacket, int countSendByte, byte[] file)
+        {
+            BinaryWriter writer = new BinaryWriter(sendPacket);
+            writer.Write(idOperation);
+            writer.Write(countSendByte);
+
+            Buffer.BlockCopy(file, countSendingByte, sendPacket.GetBuffer(), 8, countSendByte);
+
+            client.Send(sendPacket.GetBuffer());
+        }
     }
 }

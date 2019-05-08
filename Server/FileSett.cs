@@ -12,23 +12,35 @@ namespace Server
     /// </summary>
     internal sealed class FileSett
     {
-        public FileSett(string nameF,string extensionFile, int sizeF, Client user)
+        public FileSett(string nameF,string extensionFile, uint sizeF, Client user)
         {
             this.nameF = nameF;
             this.extensionFile = "." + extensionFile;
             this.sizeF = sizeF;
             this.user = user;
+
+            progressSend = new byte[sizeF];
+        }
+
+        public FileSett(string nameF, byte[] fileByte, Client user)
+        {
+            this.nameF = nameF;
+            this.user = user;
+
+            progressSend = fileByte;
         }
 
         public string nameF { get; private set; } // Имя файла;
 
         public string extensionFile { get; private set; } // Расширение файла;
 
-        public int sizeF { get; private set; } // Размер файла;
+        public uint sizeF { get; private set; } // Размер файла;
 
         public byte[] progressSend; // Прогресс отправки файла; 
 
         public int progress { get; set; } // Количество полученных байт;
+
+        public const int bufferSize = 512; // Максимальный размер пакета; 
 
         public Client user  { get; private set; } // Отправитель;
      

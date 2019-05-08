@@ -113,21 +113,35 @@ namespace ClientServerDiplom
         /// <param name="e">Click</param>
         private void ConfirmInfoUser(object sender, RoutedEventArgs e)
         {
-            if(nameUser.Text.Replace(" ","").Length > 0 && 
-               lastnameUser.Text.Replace(" ", "").Length > 0 && 
-               emailUser.Text.Replace(" ","").Length > 0 && changeInfoUser)
+            if (changeInfoUser)
             {
-                if (Person.name == null)
+                if (StyleUIE.regex.IsMatch(emailUser.Text))
                 {
-                    OperationServer.SendMsgClient(1024, 6, Person.login , nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text);             
-                }
-                else
-                {
-                    OperationServer.SendMsgClient(1024, 7, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text);
-                }
+                    if (nameUser.Text.Replace(" ", "").Length > 0)
+                    {
+                        if (lastnameUser.Text.Replace(" ", "").Length > 0)
+                        {
+                            if (Person.name == null)
+                            {
+                                OperationServer.SendMsgClient(1024, 6, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text);
+                            }
+                            else
+                            {
+                                OperationServer.SendMsgClient(1024, 7, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text);
+                            }
 
-                IsEnabledObject(false);
-                SetInfoAboutPerson();
+                            IsEnabledObject(false);
+                            SetInfoAboutPerson();
+                        }
+                        else
+                            MessageBox.Show("Введите фамилию!");
+                    }
+                    else
+                        MessageBox.Show("Введите имя!");
+                }
+                else          
+                    MessageBox.Show("Неверный формат введенной почты!");
+               
             }
         } 
 
@@ -194,8 +208,6 @@ namespace ClientServerDiplom
             Person.lastname = lastnameUser.Text;
             // Person.image =
             Person.email = emailUser.Text;
-        }
-
-        
+        }      
     }
 }

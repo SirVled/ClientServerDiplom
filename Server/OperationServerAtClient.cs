@@ -1,5 +1,4 @@
-﻿
-using ServerDiplom;
+﻿using ServerDiplom;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +8,8 @@ namespace Server
 {
     public abstract class OperationServerAtClient
     {
+
+        internal static List<FileSett> listFileSend = new List<FileSett>(); // Список файлов который в данный момент скачиваются из сервера
 
         #region База - Сервер
 
@@ -68,21 +69,19 @@ namespace Server
             string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut" };
             string[] arrParmData = { login };
             string[] arrParmOut = MySqlClass.MySQLInOut("CheckFullInfoPerson", arrParm, arrParmData);
-
-            if (arrParmOut[0].Length > 0)
+         
+            foreach(var clientU in ServerClass.clients)
             {
-                foreach(var clientU in ServerClass.clients)
+                if (clientU.socket == client)
                 {
-                    if (clientU.socket == client)
-                    {
-                        clientU.countLike = Int32.Parse(arrParmOut[3]);
-                        break;
-                    }
+                    clientU.countLike = Int32.Parse(arrParmOut[3]);
+                    break;
                 }
-
-                ServerClass.SendMsgClient(client, 1024, 3, arrParmOut[0], arrParmOut[1], Int32.Parse(arrParmOut[2]),
-                                        Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5]);
             }
+
+            ServerClass.SendMsgClient(client, 1024, 3, arrParmOut[0], arrParmOut[1], Int32.Parse(arrParmOut[2]),
+                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5]);
+            
         }
 
         /// <summary>
@@ -214,6 +213,42 @@ namespace Server
 
         #endregion
 
+
+        /// <summary>
+        /// Создание пакетов файла и отправка пакета на сервер
+        /// </summary>
+        /// <param name="client">Socket клиента</param>
+        public static void ContinueSendFile(Socket client)
+        {
+            foreach(var fileSend in listFileSend)
+            {
+                if (fileSend.user.socket == client)
+                {
+                    if (fileSend != null && fileSend.progressSend.Length != 0)
+                    {
+                        uint lengthFile = (uint)fileSend.progressSend.Length;
+                        int nextPacketSize = (int)((lengthFile - fileSend.progress > FileSett.bufferSize) ? FileSett.bufferSize : lengthFile - fileSend.progress);
+
+                        if (fileSend.progress < lengthFile)
+                        {
+                            MemoryStream packet = new MemoryStream(new byte[nextPacketSize + 8], 0, nextPacketSize + 8, true, true);
+
+                            ServerClass.SendFileClient(fileSend.user.socket, 520, 1004, fileSend.progress, packet, nextPacketSize, fileSend.progressSend);
+                        }
+                        else
+                        {
+                            ServerClass.SendMsgClient(client, 16, 1005);
+                            listFileSend.Remove(fileSend);
+                        }
+
+                        fileSend.progress += nextPacketSize;
+
+                        break;
+                    }
+                }
+            }
+        }   
+
         /// <summary>
         /// Получение файлов от клиента (по пакетам)
         /// </summary>
@@ -222,6 +257,7 @@ namespace Server
         /// <param name="countRecByte">Размер пакета</param>     
         internal static void ReceivedFile(FileSett file, byte[] infoFile, int countRecByte)
         {
+            /*
             if (file.progressSend == null)           
                 file.progressSend = infoFile;
             
@@ -232,7 +268,10 @@ namespace Server
                 Buffer.BlockCopy(buf, 0, file.progressSend, 0, buf.Length);
                 Buffer.BlockCopy(infoFile, 0, file.progressSend, file.progress, countRecByte);
             }
+            */
             
+            Buffer.BlockCopy(infoFile, 0, file.progressSend, file.progress, countRecByte);
+
             ServerClass.SendMsgClient(file.user.socket, 256, 1001);
         }
 

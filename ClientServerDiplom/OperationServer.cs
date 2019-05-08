@@ -21,9 +21,9 @@ namespace ClientServerDiplom
         public static Socket serverSocket; // Сокет для подключения к серверу
         public static Thread thread; // Поток для получения данных от сервера;
         
-        public static FileSend fileSend { get; set; } // Файл который будет отправлятся на сервер;
-        private const int sizePacket = 1024; // Размер пакета который отправляется на сервер;
-
+        public static FileSend fileSend { get; set; } // Файл, который будет отправлятся на сервер;
+        public static FileSend fileReceiving { get; set; } // Файл, который скачивается из сервера;
+        
         /// <summary>
         /// Получение ответа от сервера
         /// </summary>
@@ -34,11 +34,17 @@ namespace ClientServerDiplom
 
             MemoryStream ms = new MemoryStream(new byte[2048], 0, 2048, true, true);
             BinaryReader reader = new BinaryReader(ms);
-            int bytesSend = 0;
+            
             try
             {
                 while (true)
                 {
+                    // Если файл пользователь отправлял файл, продолжить отправку файла в другом окне;
+                    if (fileSend != null)
+                    {
+                        ContinueSendFile(ref fileSend.bytesSend);
+                    }
+
                     soket.Receive(ms.GetBuffer());
                     ms.Position = 0;
 
@@ -118,31 +124,9 @@ namespace ClientServerDiplom
                         case 1001:
                             #region Отправка файла серверу
 
-                            if (fileSend != null && fileSend.fileByte.Length != 0)
-                            {                               
-                                int lengthFile = fileSend.fileByte.Length;                         
-                                int nextPacketSize = (lengthFile - bytesSend > FileSend.bufferSize) ? FileSend.bufferSize : lengthFile - bytesSend;                            
+                            if(fileSend != null)
+                                ContinueSendFile(ref fileSend.bytesSend);
 
-                                if (bytesSend < lengthFile)
-                                {
-                                    MemoryStream packet = new MemoryStream(new byte[nextPacketSize + 8], 0, nextPacketSize + 8, true, true);
-                                    
-                                    SendFile(520, 1002, bytesSend , packet, nextPacketSize);                         
-                                }
-                                else
-                                {
-                                    SendMsgClient(16, 1003);
-                                    bytesSend = 0;                               
-                                }
-                                bytesSend += nextPacketSize;
-
-                                if (YourProject.loadUIPB != null)
-                                {
-                                    double percent = ((double)bytesSend / lengthFile) * 100;       
-                                    YourProject.SetValueProgressLoad((int)percent);
-                                }
-                                
-                            }
                             #endregion
                             break;
 
@@ -162,7 +146,44 @@ namespace ClientServerDiplom
                             #endregion
                             break;
 
-                        #endregion
+                        case 1003:
+                            #region Получение свойств файла который будет отправлятся от сервера;
+                            fileReceiving = new FileSend(reader.ReadInt32(), reader.ReadString());
+                            SendMsgClient(16, 1007);
+
+                            YourProject.IsEnabledForm(false);
+                            YourProject.SetSettingsPanelLoad(YourProject.thisWindow, fileReceiving.nameFile,false);
+                            #endregion
+                            break;
+
+                        case 1004:
+                            #region Получение пакетов файла;
+
+                            int countRecByte = reader.ReadInt32();
+                            byte[] byteFile = reader.ReadBytes(countRecByte);                           
+
+                            ReceivedFile(fileReceiving, byteFile, countRecByte);
+                            fileReceiving.bytesSend += countRecByte;
+
+                            ///Отображение прогресса отправки
+                            if (YourProject.loadUIPB != null)
+                            {
+                                double percent = ((double)fileReceiving.bytesSend / fileReceiving.fileByte.Length) * 100;
+                                YourProject.SetValueProgressLoad((int)percent,true);
+                            }
+                            #endregion
+                            break;
+
+                        case 1005:
+                            #region Создание файла по полученным байтам;                         
+                            string nameFile = $"Project File\\{fileReceiving.nameFile}";
+                            File.WriteAllBytes(nameFile, fileReceiving.fileByte);
+                            fileReceiving = null;
+                            #endregion
+
+                            break;
+
+                            #endregion
                     }
 
                     if (!soket.Connected)
@@ -192,7 +213,55 @@ namespace ClientServerDiplom
                 Thread.CurrentThread.Abort();                
                 soket.Close();               
             }
-        }   
+        }
+
+        /// <summary>
+        /// Создание пакетов файла и отправка пакета на сервер
+        /// </summary>
+        /// <param name="bytesSend">Количество отправленных байтов</param>
+        private static void ContinueSendFile(ref int bytesSend)
+        {
+            if (fileSend != null && fileSend.fileByte.Length != 0)
+            {
+                uint lengthFile = (uint)fileSend.fileByte.Length;
+                int nextPacketSize = (int)((lengthFile - bytesSend > FileSend.bufferSize) ? FileSend.bufferSize : lengthFile - bytesSend);
+
+                if (bytesSend < lengthFile)
+                {
+                    MemoryStream packet = new MemoryStream(new byte[nextPacketSize + 8], 0, nextPacketSize + 8, true, true);
+
+                    SendFile(520, 1002, bytesSend, packet, nextPacketSize);
+                }
+                else
+                {                   
+                    SendMsgClient(16, 1003);
+                    fileSend = null;
+                }
+
+                if (fileSend != null)
+                    bytesSend += nextPacketSize;
+
+                ///Отображение прогресса отправки
+                if (YourProject.loadUIPB != null)
+                {
+                    double percent = ((double)bytesSend / lengthFile) * 100;
+                    YourProject.SetValueProgressLoad((int)percent,false);
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Получение файлов от клиента (по пакетам)
+        /// </summary>
+        /// <param name="fileSize">Записываемый буффер</param>  
+        /// <param name="infoFile">Количество байт полученных от клиента</param>     
+        /// <param name="countRecByte">Размер пакета</param>     
+        internal static void ReceivedFile(FileSend file, byte[] infoFile, int countRecByte)
+        {
+            Buffer.BlockCopy(infoFile, 0, file.fileByte, file.bytesSend, countRecByte);
+            SendMsgClient(16, 1007);
+        }
 
         /// <summary>
         /// Подключение к серверу.
@@ -220,7 +289,7 @@ namespace ClientServerDiplom
         public static void SendMsgClient( int memoryBit, int idOperation, params dynamic[] sendArrData)
         {
            // try
-            //{
+            //{     
                 MemoryStream msTF = new MemoryStream(new byte[memoryBit], 0, memoryBit, true, true);
                 BinaryWriter writer = new BinaryWriter(msTF);
 
@@ -232,8 +301,9 @@ namespace ClientServerDiplom
                         writer.Write(sendArrData[i]);
                 }
                 serverSocket.Send(msTF.GetBuffer());
+         
             //}
-           // catch(Exception ex)  { MessageBox.Show("SendMsgClient : " + ex.Message); }
+            // catch(Exception ex)  { MessageBox.Show("SendMsgClient : " + ex.Message); }
         }
 
 

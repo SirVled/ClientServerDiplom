@@ -154,8 +154,7 @@ namespace ClientServerDiplom
         private void SignIn(object sender, RoutedEventArgs e)
         {
             OperationServer.Connected();
-            OperationServer.SendMsgClient(256, 1, userNameTB.Text, passwordPB.Password);
-            Person.login = userNameTB.Text;
+            OperationServer.SendMsgClient(256, 1, userNameTB.Text, passwordPB.Password);       
         }
 
         /// <summary>
@@ -256,10 +255,7 @@ namespace ClientServerDiplom
                 return false;
             }
 
-            string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$";
-            bool isItEmail = Regex.IsMatch(email.Text, emailPattern);
-
-            if(!isItEmail)
+            if(!StyleUIE.regex.IsMatch(email.Text))
             {
                 MessageBox.Show("Неверно введенный email!");
                 return false;
@@ -287,9 +283,10 @@ namespace ClientServerDiplom
         {
             thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
             {
+                Person.login = thisWindow.userNameTB.Text;
                 (new PersonalArea()).Show();
-                Person.listProject = new System.Collections.Generic.List<Project>();
-                OperationServer.SendMsgClient(128, 1005, Person.login);
+                Person.listProject = new System.Collections.Generic.List<Project>();              
+                OperationServer.SendMsgClient(128, 1005, Person.login);            
                 thisWindow.Close();
             }));
         }     
