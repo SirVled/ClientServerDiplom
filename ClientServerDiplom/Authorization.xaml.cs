@@ -272,7 +272,7 @@ namespace ClientServerDiplom
         {
             thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
             {
-                OperationServer.SendMsgClient(512, 3, username.Text ,passwords[0].Password, email.Text );
+                OperationServer.SendMsgClient(512, 3, username.Text , passwords[0].Password, email.Text );
             }));
         }
 

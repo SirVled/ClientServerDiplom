@@ -66,7 +66,7 @@ namespace Server
         /// <param name="login">Логин</param>
         public static void CheckFullInfoOfPerson(Socket client, string login)
         {
-            string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut" };
+            string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut", "@countProjectOut" };
             string[] arrParmData = { login };
             string[] arrParmOut = MySqlClass.MySQLInOut("CheckFullInfoPerson", arrParm, arrParmData);
          
@@ -80,7 +80,7 @@ namespace Server
             }
 
             ServerClass.SendMsgClient(client, 1024, 3, arrParmOut[0], arrParmOut[1], Int32.Parse(arrParmOut[2]),
-                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5]);
+                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5], arrParmOut[6]);
             
         }
 

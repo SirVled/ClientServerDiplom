@@ -43,13 +43,13 @@
                 <StackPanel VerticalAlignment="Top" Margin="48,143,0,0">
                     <Label  Content="USERNAME" Margin="10,0,0,7" Foreground="#FFAEB1BB" HorizontalAlignment="Left"  VerticalAlignment="Top" FontSize="14" FontFamily="Candara" FontWeight="Bold"/>
                     <Border BorderThickness="1" CornerRadius="15" Background="#FF6D738E" VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <TextBox x:Name="userNameTB" MaxLength="45" Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="320" GotFocus="GotFocusTB" LostFocus="LostFocusTB" PreviewTextInput="TextValidInput" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White" FontFamily="Open Sans" FontSize="14" Controls:ControlsHelper.FocusBorderBrush="{x:Null}" Controls:ControlsHelper.MouseOverBorderBrush="{x:Null}"/>
+                        <TextBox x:Name="userNameTB" Text="Vlad" MaxLength="45" Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="320" GotFocus="GotFocusTB" LostFocus="LostFocusTB" PreviewTextInput="TextValidInput" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White" FontFamily="Open Sans" FontSize="14" Controls:ControlsHelper.FocusBorderBrush="{x:Null}" Controls:ControlsHelper.MouseOverBorderBrush="{x:Null}"/>
                     </Border>
                 </StackPanel>
                 <StackPanel VerticalAlignment="Top" Margin="48,234,0,0">
                     <Label Content="PASSWORD" Margin="10,0,0,7" Foreground="#FFAEB1BB" HorizontalAlignment="Left"  VerticalAlignment="Top" FontSize="14" FontFamily="Candara" FontWeight="Bold"/>
                     <Border BorderThickness="1" CornerRadius="15" Background="#FF6D738E" VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <PasswordBox x:Name="passwordPB" MaxLength="45"  Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="320" GotFocus="GotFocusTB" LostFocus="LostFocusTB" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White" FontFamily="Open Sans" FontSize="14" Controls:ControlsHelper.FocusBorderBrush="{x:Null}" Controls:ControlsHelper.MouseOverBorderBrush="{x:Null}"/>
+                        <PasswordBox x:Name="passwordPB" Password="123" MaxLength="45"  Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="320" GotFocus="GotFocusTB" LostFocus="LostFocusTB" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White" FontFamily="Open Sans" FontSize="14" Controls:ControlsHelper.FocusBorderBrush="{x:Null}" Controls:ControlsHelper.MouseOverBorderBrush="{x:Null}"/>
                     </Border>
                 </StackPanel>
 

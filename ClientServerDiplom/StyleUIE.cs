@@ -56,6 +56,7 @@ namespace ClientServerDiplom
             Thickness marginPanelLost = (panelLost.Name.Equals("signUpGrid")) ? new Thickness(panelLost.ActualWidth + 15, 0, -panelLost.ActualWidth - 15, 0) : new Thickness(-panelLost.ActualWidth - 15, 0, panelLost.ActualWidth + 15, 0);
             panelLost.BeginAnimation(FrameworkElement.MarginProperty, AnimationPanel(panelLost, TimeSpan.FromMilliseconds(350), marginPanelLost, but2));
         }
+
         /// <summary>
         /// Создание анимации (передвижения вправо\влево)
         /// </summary>
@@ -95,7 +96,7 @@ namespace ClientServerDiplom
         /// <param name="moveTo">Конечная точка</param>
         /// <param name="but">Кнопка на которую было произведено действие</param>
         /// <returns>Анимация</returns>
-        public static AnimationTimeline AnimationPanel(Window window, TimeSpan duration, double moveTo, Button but = null)
+        public static DoubleAnimation AnimationPanel(Window window, TimeSpan duration, double moveTo, Button but = null)
         {
             DoubleAnimation animation = new DoubleAnimation
             {
@@ -111,6 +112,33 @@ namespace ClientServerDiplom
                     but.IsEnabled = true;
                 };
             }
+            return animation;
+        }
+
+        #endregion
+
+        #region PersonArea.xaml.cs
+
+        /// <summary>
+        /// Перемещени UI объекта на форме
+        /// </summary>
+        /// <typeparam name="T">UI элементы</typeparam>
+        /// <param name="obj">Объект к который будет "анимирован"</param>
+        /// <param name="duration">Время за которое анимация завершится</param>
+        /// <param name="moveTo">Путь</param>
+        /// <param name="completed">Событие Completed</param>
+        /// <returns>Анимация</returns>
+        public static ThicknessAnimation AnimationObject<T>(T obj, TimeSpan duration, Thickness moveTo , EventHandler completed = null)
+        {
+            ThicknessAnimation animation = new ThicknessAnimation
+            {
+                To = moveTo,
+                Duration = duration
+            };
+
+            if(completed != null)
+                animation.Completed += completed;
+
             return animation;
         }
 

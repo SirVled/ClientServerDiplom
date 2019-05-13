@@ -1,24 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MahApps.Metro.Controls;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ClientServerDiplom
 {
     /// <summary>
     /// Логика взаимодействия для PersonalArea.xaml
     /// </summary>
-    public partial class PersonalArea : Window
+    public partial class PersonalArea : MetroWindow
     {
 
         private static PersonalArea thisWindow; // Текущее окно;
@@ -37,8 +30,12 @@ namespace ClientServerDiplom
         /// <param name="e">Загрузка</param>
         private void Start(object sender, RoutedEventArgs e)
         {
-            OperationServer.SendMsgClient(64, 4, Person.login);
-            loginUser.Content = Person.login;      
+            if (Person.email == null)          
+                OperationServer.SendMsgClient(64, 4, Person.login);         
+            else
+                SetPersonalInfo();
+
+            loginUser.Content = Person.login;         
         }
 
 
@@ -56,7 +53,7 @@ namespace ClientServerDiplom
                     thisWindow.levelUser.Content = "Level : " + Person.level;
                     thisWindow.countLikeUser.Content = Person.likes;
                     thisWindow.emailUser.Text = Person.email;
-
+                    thisWindow.countProject.Content = $"Количество ваших проектов : {Person.countProject}";
                     try
                     {
                         thisWindow.image.Fill = new ImageBrush(new BitmapImage(new Uri(Person.image, UriKind.Absolute)));
@@ -90,8 +87,8 @@ namespace ClientServerDiplom
         /// <param name="e">Click</param>
         private void LogoutUser(object sender, RoutedEventArgs e)
         {
-
             OperationServer.SendMsgClient(128, -1, Person.login);
+            Person.email = null;
             (new Authorization()).Show();
             Close();
         }
@@ -145,6 +142,7 @@ namespace ClientServerDiplom
             }
         } 
 
+
         /// <summary>
         /// Изменение в данных пользователя
         /// </summary>
@@ -165,6 +163,99 @@ namespace ClientServerDiplom
         {
             (new YourProject()).Show();
             Close();
+        }
+
+        /// <summary>
+        /// Навидение на кнопку
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">MouseEnter</param>
+        private void HoverButton(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Button bt = (sender as Button);
+            if (bt.Name.Equals("contextBut"))
+            {
+                bt.Background = new ImageBrush(new BitmapImage(new Uri("Image/ContexButHover.png", UriKind.Relative)));          
+            }
+            else if (bt.Name.Equals("strelkaBut"))
+            {
+                strelkaPopup.BorderBrush = Brushes.DarkBlue;
+            }
+            else
+            {
+                LinearGradientBrush gradientBrushBorder = (LinearGradientBrush)bt.BorderBrush;
+                gradientBrushBorder.GradientStops[1].Color = (Color)ColorConverter.ConvertFromString("#FFFFD100");
+
+                if ((LinearGradientBrush)bt.Background != null)
+                {
+                    LinearGradientBrush linearGradientBackground = (LinearGradientBrush)bt.Background;
+                    linearGradientBackground.GradientStops[2].Color = Color.FromArgb(0, 0, 0, 0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Leave кнопки
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">MouseLeave</param>
+        private void LeaveButton(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Button bt = (sender as Button);
+            if (bt.Name.Equals("contextBut"))
+            {
+                bt.Background = new ImageBrush(new BitmapImage(new Uri("Image/ContexBut.png", UriKind.Relative)));
+            }
+            else if(bt.Name.Equals("strelkaBut"))
+            {
+                strelkaPopup.BorderBrush = Brushes.Gray;
+            }
+            else
+            {
+                LinearGradientBrush gradientBrush = (LinearGradientBrush)bt.BorderBrush;
+                gradientBrush.GradientStops[1].Color = Color.FromRgb(0, 0, 0);
+
+                if ((LinearGradientBrush)bt.Background != null)
+                {
+                    LinearGradientBrush linearGradientBackground = (LinearGradientBrush)bt.Background;
+                    linearGradientBackground.GradientStops[2].Color = Color.FromArgb(10, 0, 0, 0);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Скрытие всплывающего окна
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void HidePopupPanel(object sender, RoutedEventArgs e)
+        {
+            strelkaPopup.Visibility = Visibility.Hidden;
+
+            EventHandler handler = (s, es) =>
+            {
+                contextButBorder.Visibility = Visibility.Visible;
+                panelPopup.Visibility = Visibility.Hidden;
+            };
+            panelPopup.BeginAnimation(MarginProperty,StyleUIE.AnimationObject(panelPopup,TimeSpan.FromSeconds(0.30), new Thickness(this.ActualWidth,10,0,0),handler));
+        }
+
+        /// <summary>
+        /// Появление всплывающего окна
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void ShowPopupPanel(object sender, RoutedEventArgs e)
+        {
+            contextButBorder.Visibility = Visibility.Hidden;
+
+            panelPopup.Visibility = Visibility.Visible;
+            EventHandler handler = (s, es) =>
+            {
+                strelkaPopup.Visibility = Visibility.Visible;
+            };
+            panelPopup.BeginAnimation(MarginProperty, StyleUIE.AnimationObject(panelPopup, TimeSpan.FromSeconds(0.30), new Thickness(this.ActualWidth - (panelPopup.ActualWidth + 5), 10, 0, 0), handler));
         }
 
         #endregion
@@ -206,8 +297,10 @@ namespace ClientServerDiplom
         {
             Person.name = nameUser.Text;
             Person.lastname = lastnameUser.Text;
-            // Person.image =
+            Person.image = refImage.Text;
             Person.email = emailUser.Text;
-        }      
+        }
+
+       
     }
 }

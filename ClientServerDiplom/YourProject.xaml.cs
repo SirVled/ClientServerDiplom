@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using MahApps.Metro.Controls;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +22,7 @@ namespace ClientServerDiplom
     /// <summary>
     /// Логика взаимодействия для YourProject.xaml
     /// </summary>
-    public partial class YourProject : Window
+    public partial class YourProject : MetroWindow
     {
         public YourProject()
         {
@@ -29,9 +30,7 @@ namespace ClientServerDiplom
             thisWindow = this;
         }
 
-        private static int countProject = 0; // Количество проектов;
         private static List<MyItemProject> myItems = new List<MyItemProject>(); // Список проектов в листе;
-
 
         #region Работа с отображением информации о прогрессе отправки файла на сервер
         public static YourProject thisWindow { get; private set; }
@@ -62,20 +61,21 @@ namespace ClientServerDiplom
                 SetSettingsPanelLoad(this, OperationServer.fileReceiving.nameFile, false);
             }
 
-            countProject = 0;
+            int tempProject = 0;
             myItems.Clear();
 
             foreach (var item in Person.listProject)
             {
-                item.projectSettings.idProject = ++countProject;
+                item.projectSettings.idProject = ++tempProject;
                 myItems.Add(item.projectSettings);
             }
 
             listStatic = listViewProjects;
             //MessageBox.Show(Person.listProject.OfType<MyItemProject>().ToList().ToString() + "     " + myItems.ToString());
             // myItems.Add(SetNewInfoAtListView(++countProject, "123", "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 5));
-            RefreshListView(myItems);        
-        }
+            RefreshListView(myItems);
+
+        }  
 
         /// <summary>
         /// Переход в личный кабинет
@@ -160,7 +160,7 @@ namespace ClientServerDiplom
                     elementDelete = temp;
                 }
             }
-            countProject--;
+            Person.countProject--;
             Person.listProject.RemoveAt(elementDelete);
             myItems?.Remove((MyItemProject)listViewProjects.SelectedValue);
            
@@ -228,7 +228,7 @@ namespace ClientServerDiplom
                     {
                         if (CheckForDuplicateNames(fileName[fileName.Length - 1]))
                         {
-                            myItems.Add(new MyItemProject(++countProject, fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                            myItems.Add(new MyItemProject(++Person.countProject, fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                             RefreshListView(myItems);
 
                             string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
@@ -254,8 +254,66 @@ namespace ClientServerDiplom
             
         }
 
+        /// <summary>
+        /// Загрузка панели с звёздами для оторбражения рейтинга
+        /// </summary>
+        /// <param name="sender">Панель с звёздами</param>
+        /// <param name="e">Loaded</param>
+        private void StartStar(object sender, RoutedEventArgs e)
+        {
+            int idProject = Int32.Parse((sender as StackPanel).Tag.ToString()) - 1;          
+            double ratingProject = Person.listProject[idProject].projectSettings.ratingProject;
+
+            (sender as StackPanel).ToolTip = $"Рейтинг: {ratingProject}";
+            
+
+            if (ratingProject != 0)
+            {
+                List<Polygon> stars = (sender as StackPanel).Children.OfType<Polygon>().ToList();
+                int tempStar = 0;
+                
+              //  int temp = ((((int)ratingProject) == ratingProject) ? 0 : 1);
+
+                for(; ratingProject-- >= 1; tempStar++)
+                {
+                    try
+                    {
+                        stars[tempStar].Fill = Brushes.Yellow;
+                    }
+                    catch { break; }
+                }             
+                /// Если осталась дробная часть в рейтинге
+                if(++ratingProject > 0)
+                {
+                    LinearGradientBrush linearGradient = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(1, 0),
+                        EndPoint = new Point(0, 0)
+                    };
+
+                    linearGradient.GradientStops.Add(new GradientStop
+                    {
+                        Color = Color.FromRgb(128, 128, 128),
+                        Offset = (1 - ratingProject) - 0.01
+                    });
+
+                    linearGradient.GradientStops.Add(new GradientStop
+                    {
+                        Color = Color.FromRgb(255,255,0),
+                        Offset = 1 - ratingProject 
+                    });
+
+                    stars[tempStar].Fill = linearGradient;
+                }
+            }
+        }
+
         #endregion
 
+
+
+
+       
 
         /// <summary>
         /// Установка панели с загрузкой файла
@@ -309,7 +367,7 @@ namespace ClientServerDiplom
 
                     if (!isLoadFileServer)
                     {
-                        MyItemProject myItem = new MyItemProject(++countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
+                        MyItemProject myItem = new MyItemProject(++Person.countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
                         myItems.Add(myItem);
                         Person.listProject.Add(new Project(myItem));
                         RefreshListView(myItems);
@@ -390,7 +448,7 @@ namespace ClientServerDiplom
             }
 
             IsEnabledForm(false);
-        }
+        }  
     }
 
     

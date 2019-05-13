@@ -94,6 +94,7 @@ namespace ClientServerDiplom
                             Person.likes = reader.ReadInt32();
                             Person.image = reader.ReadString();
                             Person.email = reader.ReadString();
+                            Person.countProject = Int32.Parse(reader.ReadString());
 
                             PersonalArea.SetPersonalInfo();
                             #endregion
