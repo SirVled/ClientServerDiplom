@@ -238,7 +238,7 @@ namespace ClientServerDiplom
                 contextButBorder.Visibility = Visibility.Visible;
                 panelPopup.Visibility = Visibility.Hidden;
             };
-            panelPopup.BeginAnimation(MarginProperty,StyleUIE.AnimationObject(panelPopup,TimeSpan.FromSeconds(0.30), new Thickness(this.ActualWidth,10,0,0),handler));
+            panelPopup.BeginAnimation(MarginProperty, StyleUIE.AnimationObject(panelPopup,TimeSpan.FromSeconds(0.30), new Thickness(this.ActualWidth,10,0,0),handler));
         }
 
         /// <summary>

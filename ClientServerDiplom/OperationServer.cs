@@ -62,6 +62,7 @@ namespace ClientServerDiplom
                                     break;
 
                                 case false:
+                                    Authorization.thisWindow.signIn.IsEnabled = true;
                                     MessageBox.Show("Неверный логин или пароль!");
                                     break;
                             }
@@ -120,6 +121,39 @@ namespace ClientServerDiplom
                             #endregion
                             break;
 
+                        case 7:
+                            #region Получение списка с категориями проекта
+                            YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>{ 
+                                foreach (string item in reader.ReadString().Split('#').ToList())
+                                    YourProject.thisWindow.comboBoxTypeProj.Items.Add(item);
+
+                                YourProject.thisWindow.comboBoxTypeProj.Items.RemoveAt(YourProject.thisWindow.comboBoxTypeProj.Items.Count - 1);
+                                SendMsgClient(256, 9, Person.login, (YourProject.thisWindow.listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
+                            }));
+                            #endregion
+                            break;
+
+                        case 8:
+                            #region Получение информации о проекте (YouProject)
+                            YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                            {
+                                //string x = reader.ReadString();
+                                //string b = reader.ReadString();
+                                //double c = double.Parse(reader.ReadString().Replace('.', ','));
+                                //int y = Int32.Parse(reader.ReadString());
+                                //string n = reader.ReadString();
+                                //string s = reader.ReadString();
+                                //YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, x, b,
+                                //   c, y, n, s);
+                                YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, reader.ReadString(), reader.ReadString(),
+                                        double.Parse(reader.ReadString().Replace('.', ',')), Int32.Parse(reader.ReadString()),
+                                        reader.ReadString(), reader.ReadString(), Int32.Parse(reader.ReadString()));
+                     
+                                YourProject.thisWindow.settingsPanel.Visibility = Visibility.Visible;                               
+                            }));
+                            #endregion
+                            break;
+
                         #region Работа с файлами (1000 - 1999)
 
                         case 1001:
@@ -134,6 +168,7 @@ namespace ClientServerDiplom
                         case 1002:
                             #region  Получение списка проектов сохраненные на сервере;
 
+                            int idProject = reader.ReadInt32();
                             string name = reader.ReadString();
                             int countVote = reader.ReadInt32();
                             double rating = reader.ReadDouble();
@@ -142,7 +177,7 @@ namespace ClientServerDiplom
                             string image = reader.ReadString();
                             string viewApplication = reader.ReadString();
 
-                            Person.listProject.Add(new Project(name, countVote, rating, date, viewApplication, note, image));
+                            Person.listProject.Add(new Project(idProject, name, countVote, rating, date, viewApplication, note, image));
                          
                             #endregion
                             break;
@@ -182,6 +217,15 @@ namespace ClientServerDiplom
                             fileReceiving = null;
                             #endregion
 
+                            break;
+
+                        case 1006:
+                            #region Добавление проекта в лист;
+                            YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                            {
+                                YourProject.AddProjectToList(Int32.Parse(reader.ReadString()));
+                            }));
+                            #endregion
                             break;
 
                             #endregion

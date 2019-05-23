@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ClientServerDiplom
 {
@@ -36,38 +37,40 @@ namespace ClientServerDiplom
         public class MyItemProject
         {
 
-            public MyItemProject (string name, string date, double rating)
+            public MyItemProject (int idProject ,string name, string date, double rating)
             {
+                idProjectAtDataBase = idProject;
                 nameProject = name;
                 dateAddingProject = date;
                 ratingProject = rating;
             }
 
-            public MyItemProject(int id, string name, string status, string date, double rating) : this(name,date,rating)
+            public MyItemProject(int id, int idProject, string name, string status, string date, double rating) : this(idProject,name,date,rating)
             {
-                idProject = id;   
+                this.idProject = id;   
                 statusProject = status;
             }
 
             public int idProject { get; set; } // id проекта;
-            public string nameProject { get; set; } // Панель с именем проекта;
 
+            public int idProjectAtDataBase { get; private set; } // id проекта в базе данных;
+            public string nameProject { get; set; } // Панель с именем проекта;
             public string statusProject { get; set; } // Статус проекта;
             public string dateAddingProject { get; set; } // Дата добавление проекта;
 
             public double ratingProject { get; set; } // Рейтинг проекта;
         }
 
-
-        public Project(string name, int countVote, double rating, string date, string viewApplication)
+        public Project(int idProject,string name, int countVote, double rating, string date, string viewApplication)
         {
-            projectSettings = new MyItemProject(name, date, rating);           
+            projectSettings = new MyItemProject(idProject, name, date, rating);
 
             this.countVote = countVote;          
             this.viewApplication = viewApplication;
         }
 
-        public Project(string name, int countVote, double rating, string date, string viewApplication , string note, string image) : this(name, countVote, rating, date, viewApplication)
+
+        public Project(int idProject, string name, int countVote, double rating, string date, string viewApplication , string note, string image) : this(idProject ,name, countVote, rating, date, viewApplication)
         {
             this.note = note;
             this.image = image;
@@ -80,12 +83,9 @@ namespace ClientServerDiplom
 
         public MyItemProject projectSettings; // Проект;
 
-        public int countVote { get; set; } // Количество голосов у проекта;
-   
+        public int countVote { get; set; } // Количество голосов у проекта;  
         public string viewApplication { get; set; } // Тип проекта;
-
         public string note { get; set; } // Описание проекта;
-
         public string image { get; set; } // Изображение проекта;
     }
 }

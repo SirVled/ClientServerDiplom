@@ -33,88 +33,117 @@
 
 
     <Grid>
-        <Grid.Effect>
-            <DropShadowEffect Opacity="0.3"/>
-        </Grid.Effect>
+        <Grid MouseLeftButtonDown="HideSettigsProj">
+            <Grid.Effect>
+                <DropShadowEffect Opacity="0.3"/>
+            </Grid.Effect>
 
 
-        <StackPanel Orientation="Horizontal"  Margin="20,0,0,21" HorizontalAlignment="Left"  Height="33" VerticalAlignment="Bottom">
-            <Button Content="Назад" HorizontalAlignment="Left" Width="80" Click="GoToBack" Height="33" VerticalAlignment="Bottom"/>
-            <Button x:Name="addButProject" Margin="100,0,0,0" HorizontalAlignment="Left" Content="Добавить новый проект" Width="161" Click="AddNewProject" Height="33" VerticalAlignment="Bottom"/>
-            <Button x:Name="settingButProject" HorizontalAlignment="Left" Margin="20,0,0,0" Content="Настроить проект" Width="123" IsEnabled="False" Height="33" VerticalAlignment="Bottom"/>
-            <Button x:Name="deleteButProject" HorizontalAlignment="Left" Margin="20,0,15,0" Content="Удалить" Width="75" IsEnabled="False" Click="DeleteProject" Height="33" VerticalAlignment="Bottom"/>
-            <StackPanel x:Name="panelLoad" HorizontalAlignment="Left" Height="33"  VerticalAlignment="Top" Width="192" Visibility="Hidden">
-                <TextBlock x:Name="loadNameProj"></TextBlock>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="nameLoadTB">Загрузка :</TextBlock>
-                    <ProgressBar x:Name="loadProgressPB" Margin="10,0,5,0" Width="90" Height="10" Value="0"></ProgressBar>
-                    <TextBlock x:Name="loadProgressTB"></TextBlock>
+            <StackPanel Orientation="Horizontal"  Margin="20,0,0,21" HorizontalAlignment="Left"  Height="33" VerticalAlignment="Bottom">
+                <Button Content="Назад" HorizontalAlignment="Left" Width="80" Click="GoToBack" Height="33" VerticalAlignment="Bottom"/>
+                <Button x:Name="addButProject" Margin="100,0,0,0" HorizontalAlignment="Left" Content="Добавить новый проект" Width="161" Click="AddNewProject" Height="33" VerticalAlignment="Bottom"/>
+                <Button x:Name="settingButProject" HorizontalAlignment="Left" Margin="20,0,0,0" Content="Настроить проект" Width="123" IsEnabled="False" Height="33" VerticalAlignment="Bottom" Click="ShowSettingsPanel"/>
+                <Button x:Name="deleteButProject" HorizontalAlignment="Left" Margin="20,0,15,0" Content="Удалить" Width="75" IsEnabled="False" Click="DeleteProject" Height="33" VerticalAlignment="Bottom"/>
+                <StackPanel x:Name="panelLoad" HorizontalAlignment="Left" Height="33"  VerticalAlignment="Top" Width="192" Visibility="Hidden">
+                    <TextBlock x:Name="loadNameProj"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="nameLoadTB"><Run Text="Загрузка :"/></TextBlock>
+                        <ProgressBar x:Name="loadProgressPB" Margin="10,0,5,0" Width="90" Height="10" Value="0"/>
+                        <TextBlock x:Name="loadProgressTB"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
-        </StackPanel>
 
 
-        <ListView x:Name="listViewProjects" HorizontalContentAlignment="Center" Margin="10,30,10,73" AllowDrop="True" DragDrop.Drop="DropProjectAtList" SelectionChanged="SelectProject">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn x:Name="idProject" Width="30" DisplayMemberBinding="{Binding Path=idProject}">id</GridViewColumn>
-                    <GridViewColumn Header="Имя проекта" Width="290">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="{Binding Path=nameProject}"></Label>
-                                    <Image Source="http://s1.iconbird.com/ico/0612/customicondesignoffice2/w256h2561339870311Folder256.png" Width="30"></Image>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Width="150" Header="Статус">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Label Foreground="Blue" FontFamily="Cambria"  >Загружен</Label>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Width="175"  DisplayMemberBinding="{Binding Path=dateAddingProject}">Дата добавления</GridViewColumn>
-                    <GridViewColumn Width="140"  Header="Рейтинг">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Tag="{Binding Path=idProject}" ToolTipService.BetweenShowDelay="500" ToolTipService.InitialShowDelay="0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" Loaded="StartStar">
-                                    <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Fill="Gray"/>
-                                    <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
-                                    <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
-                                    <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
-                                    <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header=""  >
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Content="" Style="{StaticResource SomeButtonStyle}" Width="30" Height="30" Tag="{Binding Path=idProject}" Click="DownloadFile" >
-                                    <Button.Background>
-                                        <ImageBrush ImageSource="https://icons8.com/iconizer/files/Devine_icons/orig/FTP.png"></ImageBrush>
-                                    </Button.Background>
-                                </Button>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-            <ListView.Resources>
-                <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                    <!--<Style.Triggers>
+            <ListView x:Name="listViewProjects" HorizontalContentAlignment="Center" Margin="10,30,10,73" AllowDrop="True" DragDrop.Drop="DropProjectAtList" SelectionChanged="SelectProject" d:IsHidden="True">
+                <ListView.Resources>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <!--<Style.Triggers>
                         <DataTrigger Binding="{Binding ElementName=listViewProjects, Path=IsVisibility}" Value="True">
                             <Setter Property="Visibility" Value="Hidden"></Setter>
                         </DataTrigger>
                     </Style.Triggers>-->
-                </Style>
-            </ListView.Resources>
-        </ListView>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn x:Name="idProject" Width="30" DisplayMemberBinding="{Binding idProject}" Header="id"/>
+                        <GridViewColumn Header="Имя проекта" Width="290">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding nameProject}"/>
+                                        <Image Source="http://s1.iconbird.com/ico/0612/customicondesignoffice2/w256h2561339870311Folder256.png" Width="30"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Width="150" Header="Статус">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Label Foreground="Blue" FontFamily="Cambria"  Content="Загружен"  />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Width="175"  DisplayMemberBinding="{Binding dateAddingProject}" Header="Дата добавления"/>
+                        <GridViewColumn Width="140"  Header="Рейтинг">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Tag="{Binding idProject}" ToolTipService.BetweenShowDelay="500" ToolTipService.InitialShowDelay="0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" Loaded="StartStar">
+                                        <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Fill="Gray"/>
+                                        <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
+                                        <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
+                                        <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
+                                        <Polygon StrokeThickness="1" FillRule="Nonzero" Points="1,12 6.4,0 11,12 0,5 13,5" Margin="5,0,0,0" Fill="Gray"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header=""  >
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="" Style="{StaticResource SomeButtonStyle}" Width="30" Height="30" Tag="{Binding idProject}" Click="DownloadFile" >
+                                        <Button.Background>
+                                            <ImageBrush ImageSource="https://icons8.com/iconizer/files/Devine_icons/orig/FTP.png"/>
+                                        </Button.Background>
+                                    </Button>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+        <Border x:Name="settingsPanel" BorderBrush="#7F005DFF" Margin="0,18,0,0" BorderThickness="5,5,0,5" HorizontalAlignment="Right"  VerticalAlignment="Top" CornerRadius="3">
+            <Grid  HorizontalAlignment="Left" Height="321"  VerticalAlignment="Top" Width="551"  Background="#FFB2B2B2" >
+                <TextBox x:Name="nameProjTB" HorizontalAlignment="Left"  Margin="10,10,0,0" TextWrapping="Wrap" Text="NameProject" VerticalAlignment="Top" Width="275" FontSize="18" IsEnabled="False"/>
+                <Button Content="" Style="{StaticResource SomeButtonStyle}" HorizontalAlignment="Left" Margin="290,6,0,0" BorderThickness="0" VerticalAlignment="Top" Width="23" Height="18" Click="RenameProject">
+                    <Button.Background>
+                        <ImageBrush ImageSource="http://image.flaticon.com/icons/png/128/69/69455.png"/>
+                    </Button.Background>
+                </Button>
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,10,0">
+                    <Label x:Name="dateProjLB" Content="Date : yyyy-mm-dd" HorizontalAlignment="Right"  VerticalAlignment="Top" FontSize="11" Foreground="White"/>
+                    <Label x:Name="countVoteProjLB" Content="Count Vote : 0000" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="11" Foreground="White"/>
+                    <Label x:Name="ratingProjLB" Content="Rating : 0.00" HorizontalAlignment="Right"  VerticalAlignment="Top" FontSize="11" Foreground="White"/>
+                </StackPanel>
+                <ComboBox x:Name="comboBoxTypeProj" HorizontalAlignment="Left" Margin="10,71,0,0" VerticalAlignment="Top" Width="202" Height="27" Controls:TextBoxHelper.Watermark="Категория" Controls:TextBoxHelper.WatermarkAlignment="Center" FontSize="14" Controls:ControlsHelper.MouseOverBorderBrush="#FF8D8D8D"/>
+                <Border Margin="390,80,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" BorderBrush="Black" BorderThickness="1">
+                    <Ellipse x:Name="imageProj" HorizontalAlignment="Left" Height="100"  Stroke="Black" VerticalAlignment="Top" Width="100">
+                        <Ellipse.Fill>
+                            <ImageBrush ImageSource="https://pngimage.net/wp-content/uploads/2018/06/%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9-%D0%B7%D0%BD%D0%B0%D0%BA-%D0%B2%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D0%B0-png-2.png"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                </Border>
+                <TextBox x:Name="hrefImageTb" HorizontalAlignment="Left" Height="23" Margin="331,187,0,0" TextChanged="SetProjImage" TextWrapping="Wrap" TextAlignment="Center"  VerticalAlignment="Top" Width="197" Controls:TextBoxHelper.ClearTextButton="True" MaxLength="1500"  Controls:TextBoxHelper.WatermarkAlignment="Center" Controls:TextBoxHelper.Watermark="Ссылка на картинку" Controls:TextBoxHelper.IsSpellCheckContextMenuEnabled="False" Controls:TextBoxHelper.AutoWatermark="True"/>
+                <RichTextBox x:Name="noteTextBox" HorizontalAlignment="Left" Height="144" Margin="10,147,0,0" VerticalAlignment="Top" Width="303"/>
+                <Button Content="Отмена" HorizontalAlignment="Left" Margin="348,264,0,0" VerticalAlignment="Top" Width="75" Click="CancelSetSettingsProject"/>
+                <Button Content="Подтвердить" HorizontalAlignment="Left" Margin="435,264,0,0" VerticalAlignment="Top" Width="93" Click="AcceptUpdateInfoProject"/>
+                <Label Content="Описание" BorderBrush="#FFCCCCCC" BorderThickness="1,1,1,0" HorizontalAlignment="Left" Margin="10,120,0,0" VerticalAlignment="Top" Background="White" FontFamily="Open Sans" FontWeight="Bold" Width="74"/>
+                <TextBlock x:Name="expasionText" Text=".xxxx" HorizontalAlignment="Left" Margin="290,27,0,0" VerticalAlignment="Top" FontWeight="Bold" FontFamily="Times New Roman"/>
 
-
-       
+            </Grid>
+        </Border>
     </Grid>
 </Controls:MetroWindow>

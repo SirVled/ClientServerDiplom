@@ -42,7 +42,10 @@ namespace ClientServerDiplom
         public static TextBlock nameProjectLoadUI { get; set; } // Имя проекта который отправляется на сервер;
 
         #endregion
+
         #region Нажатия на кнопки и другие действие привязанные к объктам на форме
+
+        #region Лист с проектами
 
         /// <summary>
         /// Загрузка окна
@@ -63,7 +66,7 @@ namespace ClientServerDiplom
 
             int tempProject = 0;
             myItems.Clear();
-
+            
             foreach (var item in Person.listProject)
             {
                 item.projectSettings.idProject = ++tempProject;
@@ -75,6 +78,9 @@ namespace ClientServerDiplom
             // myItems.Add(SetNewInfoAtListView(++countProject, "123", "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 5));
             RefreshListView(myItems);
 
+            //Перемешение панели с настройками проекта
+            thisWindow.settingsPanel.Margin = new Thickness(0,settingsPanel.Margin.Top,-settingsPanel.ActualWidth - 5, 0);
+            settingsPanel.Visibility = Visibility.Hidden;
         }  
 
         /// <summary>
@@ -112,6 +118,14 @@ namespace ClientServerDiplom
             {
                 settingButProject.IsEnabled = true;
                 deleteButProject.IsEnabled = true;
+
+                if(settingsPanel.Visibility == Visibility.Visible)
+                {
+                    nameProjTB.IsEnabled = false;    
+                    //Установка данных на настройки проекта
+                    OperationServer.SendMsgClient(256, 9, Person.login, (listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
+                }
+
             }
             else
             {
@@ -228,7 +242,7 @@ namespace ClientServerDiplom
                     {
                         if (CheckForDuplicateNames(fileName[fileName.Length - 1]))
                         {
-                            myItems.Add(new MyItemProject(++Person.countProject, fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                            myItems.Add(new MyItemProject(++Person.countProject, -1,fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                             RefreshListView(myItems);
 
                             string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
@@ -264,8 +278,7 @@ namespace ClientServerDiplom
             int idProject = Int32.Parse((sender as StackPanel).Tag.ToString()) - 1;          
             double ratingProject = Person.listProject[idProject].projectSettings.ratingProject;
 
-            (sender as StackPanel).ToolTip = $"Рейтинг: {ratingProject}";
-            
+            (sender as StackPanel).ToolTip = $"Рейтинг: {ratingProject}";          
 
             if (ratingProject != 0)
             {
@@ -308,12 +321,219 @@ namespace ClientServerDiplom
             }
         }
 
+        /// <summary>
+        /// Нажание на панель с проектами
+        /// </summary>
+        /// <param name="sender">Grid</param>
+        /// <param name="e">MouseLeftDown</param>
+        private void HideSettigsProj(object sender, MouseButtonEventArgs e)
+        {
+            if (settingsPanel.Visibility.Equals(Visibility.Visible))         
+                SetHiddenSettingsPanel();          
+        }
+
         #endregion
 
+        #region Settings Project
+
+        /// <summary>
+        /// Отображение панели с настройками проекта
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void ShowSettingsPanel(object sender, RoutedEventArgs e)
+        {
+            if (comboBoxTypeProj.Items.Count <= 0)
+                OperationServer.SendMsgClient(32, 8); // Получение списка категорий проекта;
+            else
+            {              
+                OperationServer.SendMsgClient(256, 9, Person.login, (listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
+            }
+        }
+
+        /// <summary>
+        /// Отмента установки настроек проекта\файла
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CancelSetSettingsProject(object sender, RoutedEventArgs e)
+        {
+            SetHiddenSettingsPanel();
+        }
+
+        /// <summary>
+        /// Изменение картинки проекта
+        /// </summary>
+        /// <param name="sender">TextBox</param>
+        /// <param name="e">TextChanged</param>
+        private void SetProjImage(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                imageProj.Fill = new ImageBrush(new BitmapImage(new Uri(((sender as TextBox).Text.Trim()), UriKind.Absolute)));  
+            }
+            catch
+            {          
+                imageProj.Fill = new ImageBrush(new BitmapImage(new Uri(("https://pngimage.net/wp-content/uploads/2018/06/%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9-%D0%B7%D0%BD%D0%B0%D0%BA-%D0%B2%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D0%B0-png-2.png"), UriKind.Absolute)));              
+            }
+        }
+
+        /// <summary>
+        /// Изменение имени проекта
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void RenameProject(object sender, RoutedEventArgs e)
+        {
+            nameProjTB.IsEnabled = true;
+        }
+
+        /// <summary>
+        /// Подтверждение изменений для информации о проекте
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void AcceptUpdateInfoProject(object sender, RoutedEventArgs e)
+        {
+            if (new TextRange(noteTextBox.Document.ContentStart, noteTextBox.Document.ContentEnd).Text.Length <= 900)
+            {        
+                string nameProj = nameProjTB.Text + expasionText.Text;
+                if (comboBoxTypeProj.SelectedIndex != -1)
+                {
+                    int idProject = (listViewProjects.SelectedItem as MyItemProject).idProjectAtDataBase;
+                    if (nameProjTB.Text.Trim().Length != 0)
+                    {
+                        if (CheckToDiscName(listViewProjects.SelectedValue, nameProj))
+                        {                       
+                            SendInfo(idProject, nameProj);
+                        }
+                        else
+
+                            MessageBox.Show($"Проект с таким именем {nameProj} уже существует!");
+                    }
+                    else
+                        SendInfo(idProject, nameProjTB.Tag.ToString());
+                }
+                else
+                    MessageBox.Show("Выберите категорию!");
+            }
+            else
+                MessageBox.Show("Описание проекта слишком большое. Максимальное значение 900!");
+
+        }
+
+        #endregion
+
+        #endregion
+
+        /// <summary>
+        /// Отправка данных на сервер 
+        /// </summary>
+        /// <param name="idProject">id проекта</param>
+        /// <param name="nameProject">Имя проекта</param>
+        private void SendInfo(int idProject,string nameProject)
+        {
+            int viewApp = comboBoxTypeProj.SelectedIndex;
+            string hrefImage = hrefImageTb.Text;
+            string note = new TextRange(noteTextBox.Document.ContentStart, noteTextBox.Document.ContentEnd).Text;
+
+            OperationServer.SendMsgClient(520, 10, idProject, nameProject, viewApp + 1, note, hrefImage);
+            SetHiddenSettingsPanel();
+        }
+
+        /// <summary>
+        /// Проверка на повторение имен
+        /// </summary>
+        /// <param name="project">Проект который проверяется</param>
+        /// <param name="name">Имя проекта</param>
+        /// <returns>Состояние проверки</returns>
+        private bool CheckToDiscName(object project, string name)
+        {       
+            foreach(var item in listViewProjects.Items)
+            {
+                if(!item.Equals(project))
+                {
+                    if ((item as MyItemProject).nameProject == name)
+                        return false;
+                }
+            }
+            return true;
+        }
 
 
+        /// <summary>
+        /// Hide панели с настройками проекта
+        /// </summary>
+        private void SetHiddenSettingsPanel()
+        {
+            #region Анимация панели
+            thisWindow.settingsPanel.BeginAnimation(MarginProperty,
+                StyleUIE.AnimationObject(thisWindow.settingsPanel,
+                TimeSpan.FromSeconds(0.33),
+                new Thickness(0, settingsPanel.Margin.Top, -settingsPanel.ActualWidth - 5, 0),
+                new EventHandler((sen, e) =>  { settingsPanel.Visibility = Visibility.Hidden; })));
+            #endregion
 
-       
+            nameProjTB.IsEnabled = false;
+            comboBoxTypeProj.SelectedIndex = -1;
+            noteTextBox.Document.Blocks.Clear();
+        }
+
+        /// <summary>
+        /// Установка информации о проекте
+        /// </summary>
+        /// <param name="thisWindow">Текущее окно</param>
+        /// <param name="nameProject">Имя проекта</param>
+        /// <param name="datePub">Дата публикации</param>
+        /// <param name="rating">Рейтинг</param>
+        /// <param name="countVote">Количество голосов</param>
+        /// <param name="note">Описание</param>
+        /// <param name="hrefImage">Ссылка на картинку</param>
+        /// <param name="viewApp">Категория проекта</param>
+        public static void SetInfoForSettingsPanel(YourProject thisWindow,string nameProject, string datePub,
+                double rating, int countVote, string note, string hrefImage, int viewApp)
+        {
+            #region Анимация панели
+           
+           thisWindow.settingsPanel.BeginAnimation(MarginProperty,
+               StyleUIE.AnimationObject(thisWindow.settingsPanel, 
+               TimeSpan.FromSeconds(0.33), 
+               new Thickness(0, thisWindow.settingsPanel.Margin.Top, 0, 0)));
+
+            #endregion       
+
+            string[] exp = nameProject.Split('.');
+
+            thisWindow.nameProjTB.Text = nameProject.Replace("." + exp[exp.Length - 1], string.Empty);
+            thisWindow.nameProjTB.Tag = nameProject;
+            thisWindow.nameProjTB.MaxLength = 45 - (exp[exp.Length - 1].Length + 1);
+            thisWindow.expasionText.Text = "." + exp[exp.Length - 1];
+
+            thisWindow.dateProjLB.Content = $"Date : {datePub}";
+            thisWindow.ratingProjLB.Content = $"Rating : {rating}";
+            thisWindow.countVoteProjLB.Content = $"Count Vote : {countVote}";
+
+            if (!hrefImage.Equals(string.Empty) || hrefImage != null)
+            {
+                thisWindow.hrefImageTb.Text = hrefImage;
+                try
+                {
+                    thisWindow.imageProj.Fill = new ImageBrush(new BitmapImage(new Uri(hrefImage, UriKind.Absolute)));
+                }
+                catch { }
+            }
+
+            thisWindow.noteTextBox.Document.Blocks.Clear();
+            if (!note.Equals(string.Empty) || note != null)
+                thisWindow.noteTextBox.AppendText(note);
+
+            if (viewApp > 0)
+            {
+                thisWindow.comboBoxTypeProj.SelectedIndex = viewApp - 1;
+            }
+        }
+
+
 
         /// <summary>
         /// Установка панели с загрузкой файла
@@ -365,17 +585,17 @@ namespace ClientServerDiplom
                     loadUIPB = null;
                     loadUITB = null;
 
-                    if (!isLoadFileServer)
+                    //if (!isLoadFileServer)
+                    //{
+                    //    MyItemProject myItem = new MyItemProject(++Person.countProject,-1, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
+                    //    myItems.Add(myItem);
+                    //    Person.listProject.Add(new Project(myItem));
+                    //    RefreshListView(myItems);
+                    //    MessageBox.Show("Файл успешно добавлен!");
+                    //}
+                    //else
+                    if(isLoadFileServer)
                     {
-                        MyItemProject myItem = new MyItemProject(++Person.countProject, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
-                        myItems.Add(myItem);
-                        Person.listProject.Add(new Project(myItem));
-                        RefreshListView(myItems);
-                        MessageBox.Show("Файл успешно добавлен!");
-                    }
-                    else
-                    {
-
                         MessageBox.Show("Файл успешно скачен!");
                     }
 
@@ -420,6 +640,19 @@ namespace ClientServerDiplom
         }
 
         /// <summary>
+        /// Добавление проекта в список с проектами
+        /// </summary>
+        /// <param name="idProjectAtDB">id проекта в базе данных</param>
+        public static void AddProjectToList(int idProjectAtDB)
+        {
+            MyItemProject myItem = new MyItemProject(++Person.countProject, idProjectAtDB, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
+            myItems.Add(myItem);
+            Person.listProject.Add(new Project(myItem));
+            RefreshListView(myItems);
+            MessageBox.Show("Файл успешно добавлен!");
+        }
+
+        /// <summary>
         /// Обновляет таблицу с проектами
         /// </summary>
         /// <param name="myItems">Данные которые будут отображатся в ListView</param>
@@ -448,8 +681,6 @@ namespace ClientServerDiplom
             }
 
             IsEnabledForm(false);
-        }  
-    }
-
-    
+        }
+    } 
 }

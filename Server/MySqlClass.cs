@@ -14,6 +14,13 @@ namespace ServerDiplom
             password=Student!@#;
             Convert Zero Datetime=true;"; //Строка подключения к серверу
 
+        public static string sConnStringLocal = @"server = localhost;
+            database=OstapFckMyAss;
+            user id =root;
+            port=3306;
+            password=root;
+            Convert Zero Datetime=true;";
+
         public static int idUser { get; set; } // id юзера;
         public static string nameUser { get; set; } // Логин юзера;
 

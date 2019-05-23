@@ -25,7 +25,7 @@ namespace ClientServerDiplom
             thisWindow = this;
         }
 
-        private static Authorization thisWindow { get; set; } // Окно;
+        public static Authorization thisWindow { get; set; } // Окно;
         private static PasswordBox[] passwords { get; set; } // Объекты на форме регистрации
         private static TextBox username { get; set; }
         private static TextBox email { get; set; }
@@ -153,6 +153,7 @@ namespace ClientServerDiplom
         /// <param name="e">Click</param>
         private void SignIn(object sender, RoutedEventArgs e)
         {
+            (sender as Button).IsEnabled = false;
             OperationServer.Connected();
             OperationServer.SendMsgClient(256, 1, userNameTB.Text, passwordPB.Password);       
         }

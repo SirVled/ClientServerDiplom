@@ -119,6 +119,9 @@ namespace ClientServerDiplom
 
         #region PersonArea.xaml.cs
 
+
+        #endregion
+
         /// <summary>
         /// Перемещени UI объекта на форме
         /// </summary>
@@ -128,7 +131,7 @@ namespace ClientServerDiplom
         /// <param name="moveTo">Путь</param>
         /// <param name="completed">Событие Completed</param>
         /// <returns>Анимация</returns>
-        public static ThicknessAnimation AnimationObject<T>(T obj, TimeSpan duration, Thickness moveTo , EventHandler completed = null)
+        public static ThicknessAnimation AnimationObject<T>(T obj, TimeSpan duration, Thickness moveTo, EventHandler completed = null)
         {
             ThicknessAnimation animation = new ThicknessAnimation
             {
@@ -136,12 +139,10 @@ namespace ClientServerDiplom
                 Duration = duration
             };
 
-            if(completed != null)
+            if (completed != null)
                 animation.Completed += completed;
 
             return animation;
         }
-
-        #endregion
     }
 }

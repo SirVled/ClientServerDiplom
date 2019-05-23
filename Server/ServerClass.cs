@@ -68,7 +68,7 @@ namespace ServerDiplom
 
                         int idOperationMySql = reader.ReadInt32();
 
-                        string login, password, email;
+                        string login, password, email, nameProject;
                         string[] infoUser = new string[4];
 
                         switch (idOperationMySql)
@@ -132,7 +132,24 @@ namespace ServerDiplom
                                 OperationServerAtClient.UpdateInfoAboutPerson(login, infoUser);
                                 break;
 
+                            // GetViewApplication 8. Получение списка категорий приложения;
+                            case 8:
+                                SendMsgClient(client, 256, 7, OperationServerAtClient.GetListViewApplication());
+                                break;
+                            
+                            //GetFullInfoForProject 9. Получение всей информации о выбранном проекте;
+                            case 9:
+                                login = reader.ReadString();
+                                nameProject = reader.ReadString();
 
+                                OperationServerAtClient.GetFullInfoForProject(client, login, nameProject);
+                                break;
+
+                            //UpdateInfoForProject 10. Изменяем информацию о проекте;
+                            case 10:                          
+                                OperationServerAtClient.UpdateInfoForProject(reader.ReadInt32(), reader.ReadString(), reader.ReadInt32(), reader.ReadString(), reader.ReadString());
+                                break;
+                            #region Работа с почтой
                             // CheckEmail 101. Проверка почты пользователя;
                             case 101:
                                 email = reader.ReadString();
@@ -159,6 +176,8 @@ namespace ServerDiplom
                                 OperationServerAtClient.UpdatePasswordMail(email, password);
                                 break;
                             #endregion 
+
+                            #endregion
 
                             #region Работа с файлами которые храняться на сервере (1000 - 1999) 
 
@@ -218,7 +237,7 @@ namespace ServerDiplom
                                         }
                                         string nameFile = directoryUser + "\\" + fileSend.nameF + fileSend.extensionFile;
 
-                                        OperationServerAtClient.AddNewProject(fileSend.user.name,(fileSend.nameF + fileSend.extensionFile));
+                                        OperationServerAtClient.AddNewProject(client,fileSend.user.name,(fileSend.nameF + fileSend.extensionFile));
 
                                         File.WriteAllBytes(nameFile, fileSend.progressSend);
                                         fileSettList.Remove(fileSend);

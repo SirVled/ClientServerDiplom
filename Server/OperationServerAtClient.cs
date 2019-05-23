@@ -149,13 +149,16 @@ namespace Server
         /// <summary>
         /// Добавление свойства проекта в базу
         /// </summary>
+        /// <param name="client">Сокет клиента</param>
         /// <param name="login">Логин пользователя</param>
         /// <param name="nameProject">Имя проекта</param>
-        public static void AddNewProject(string login, string nameProject)
+        public static void AddNewProject(Socket client,string login, string nameProject)
         {
-            string[] arrParm = { "@nameUserIn", "@nameProjectIn", "@datePublication" };
+            string[] arrParm = { "@nameUserIn", "@nameProjectIn", "@datePublication" , "@idProjectOut" };
             string[] arrParmData = { login, nameProject , DateTime.Now.ToString("yyyy-MM-dd") };
-            MySqlClass.MySQLIn("AddProject", arrParm, arrParmData);
+            string[] arrParmOut = MySqlClass.MySQLInOut("AddProject", arrParm, arrParmData);
+
+            ServerClass.SendMsgClient(client, 64, 1006, arrParmOut[0]);
         }
 
         /// <summary>
@@ -184,7 +187,7 @@ namespace Server
                                        "inner join Person on Person.idPerson = HistoryDownload.idPerson " +
                                        "inner join `User` on `User`.idUser = Person.idUser " +
                                        "inner join ViewApplication on ViewApplication.idViewApplication = Project.idViewApplication " +
-                         $"where `User`.Login = '{login}' ";
+                         $"where `User`.Login = '{login}'";
 
                 MySqlClass.mySQLConn.Open();
 
@@ -192,6 +195,7 @@ namespace Server
          
                 while (reader.Read())
                 {
+                    int idProject = reader.GetInt32(0);
                     string name = reader.GetString(2);
                     int countVote = reader.GetInt32(3);
                     double rating = reader.GetDouble(4);
@@ -202,11 +206,72 @@ namespace Server
 
                     string viewApplication = reader.GetString(9);
                   
-                    ServerClass.SendMsgClient(client, 2048, 1002, name, countVote, rating, date, note, image, viewApplication);
+                    ServerClass.SendMsgClient(client, 2048, 1002, idProject, name, countVote, rating, date, note, image, viewApplication);
                 }
             }
             catch(Exception ex) { ServerClass.WriteConsoleMsg("GetListProject : " + ex.Message); }
             finally { MySqlClass.mySQLConn.Close(); }
+        }
+        
+        /// <summary>
+        /// Получение списка категорий проекта разделеными символом '#' 
+        /// </summary>
+        /// <returns>Строка с списком</returns>
+        public static string GetListViewApplication()
+        {
+            string listData = string.Empty;
+
+            try
+            {           
+                string quary = "select Name from ViewApplication " +
+                            "where idViewApplication != -1";
+                MySqlClass.mySQLConn.Open();
+                MySql.Data.MySqlClient.MySqlDataReader reader = (new MySql.Data.MySqlClient.MySqlCommand(quary, MySqlClass.mySQLConn)).ExecuteReader();
+
+                while (reader.Read())
+                {
+                    listData += reader.GetString(0) + " #";
+                }
+            }
+            catch (Exception ex) { ServerClass.WriteConsoleMsg("GetListViewApplication : " + ex.Message); }
+
+            finally
+            {
+                MySqlClass.mySQLConn.Close();            
+            }
+
+            return listData;
+        }
+
+        /// <summary>
+        /// Получение всей информации о проекте из базы
+        /// </summary>
+        /// <param name="client">Клиент</param>
+        /// <param name="loginUser">Логин</param>
+        /// <param name="nameProject">Имя проекта</param>
+        public static void GetFullInfoForProject(Socket client, string loginUser, string nameProject)
+        {
+            string[] arrParm = { "@loginUserIn", "@nameProjectIn", "@datePub", "@rating", "@countVote", "@note", "@image", "@viewApp" };
+            string[] arrParmData = { loginUser, nameProject };
+            string[] arrParmOut = MySqlClass.MySQLInOut("GetInfoProject", arrParm, arrParmData);
+
+            ServerClass.SendMsgClient(client, 512, 8, nameProject, arrParmOut[0],
+                 arrParmOut[1], arrParmOut[2], arrParmOut[3], arrParmOut[4], arrParmOut[5]);
+        }
+
+        /// <summary>
+        /// Изменяет данные у проекта в базе 
+        /// </summary>
+        /// <param name="id">id проекта</param>
+        /// <param name="name">Имя</param>
+        /// <param name="viewApp">Категория</param>
+        /// <param name="note">Описание</param>
+        /// <param name="hrefImage">Ссылка на изображение</param>
+        public static void UpdateInfoForProject(int id,string name, int viewApp, string note, string hrefImage)
+        {
+            string[] arrParm = { "@idProj", "@nameProj", "@viewApp", "@note", "@hrefImage" };
+            string[] arrParmData = { id.ToString(), name, viewApp.ToString(), note, hrefImage };
+            MySqlClass.MySQLIn("UpdateInfoForProject", arrParm, arrParmData);
         }
 
         #endregion 
