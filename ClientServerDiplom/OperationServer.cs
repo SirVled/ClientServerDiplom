@@ -217,6 +217,7 @@ namespace ClientServerDiplom
                             fileReceiving = null;
                             #endregion
 
+
                             break;
 
                         case 1006:
