@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,7 +31,8 @@ namespace ClientServerDiplom
             thisWindow = this;
         }
 
-        private static List<MyItemProject> myItems = new List<MyItemProject>(); // Список проектов в листе;
+        private static ObservableCollection<MyItemProject> myItems = new ObservableCollection<MyItemProject>(); // Список проектов в листе;
+        private static List<StackPanel> listPanelStars = new List<StackPanel>(); // Список с панелью рейтинга;
 
         #region Работа с отображением информации о прогрессе отправки файла на сервер
         public static YourProject thisWindow { get; private set; }
@@ -76,8 +78,9 @@ namespace ClientServerDiplom
             listStatic = listViewProjects;
             //MessageBox.Show(Person.listProject.OfType<MyItemProject>().ToList().ToString() + "     " + myItems.ToString());
             // myItems.Add(SetNewInfoAtListView(++countProject, "123", "Не проверен", DateTime.Now.ToString("dd-MM-yyyy"), 5));
-            RefreshListView(myItems);
 
+            //RefreshListView(myItems);
+            listStatic.ItemsSource = myItems;
             //Перемешение панели с настройками проекта
             thisWindow.settingsPanel.Margin = new Thickness(0,settingsPanel.Margin.Top,-settingsPanel.ActualWidth - 5, 0);
             settingsPanel.Visibility = Visibility.Hidden;
@@ -95,7 +98,7 @@ namespace ClientServerDiplom
                 if(MessageBox.Show("Загрузка еще не завершена! Остановить загрузку?","Загрузка",MessageBoxButton.YesNoCancel) == MessageBoxResult.Yes)
                 {
                     OperationServer.fileReceiving = null;
-                    (new PersonalArea()).Show();
+                    (new PersonalArea()).Show();                
                     Close();
                 }           
             }
@@ -178,7 +181,7 @@ namespace ClientServerDiplom
             Person.listProject.RemoveAt(elementDelete);
             myItems?.Remove((MyItemProject)listViewProjects.SelectedValue);
            
-            RefreshListView(myItems);
+          //  RefreshListView(myItems);
        
             MessageBox.Show("Проект успешно удален!");
         }
@@ -207,12 +210,17 @@ namespace ClientServerDiplom
                     {                       
                         byte[] arrByte = File.ReadAllBytes(project.FileName);
 
-                        string[] nameSendFile = fullName[fullName.Length - 1].Split('.');
-                        OperationServer.fileSend = new FileSend(arrByte, nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
+                        if (arrByte.Length > 0)
+                        {
+                            string[] nameSendFile = fullName[fullName.Length - 1].Split('.');
+                            OperationServer.fileSend = new FileSend(arrByte, nameSendFile[0], nameSendFile[nameSendFile.Length - 1]);
 
-                        SetSettingsPanelLoad(this, fullName[fullName.Length - 1]);
+                            SetSettingsPanelLoad(this, fullName[fullName.Length - 1]);
 
-                        IsEnabledForm(false);
+                            IsEnabledForm(false);
+                        }
+                        else
+                            MessageBox.Show("Файл не может иметь размер 0!");
                     }
                 }
                 else
@@ -243,7 +251,7 @@ namespace ClientServerDiplom
                         if (CheckForDuplicateNames(fileName[fileName.Length - 1]))
                         {
                             myItems.Add(new MyItemProject(++Person.countProject, -1,fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
-                            RefreshListView(myItems);
+                     //       RefreshListView(myItems);
 
                             string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
 
@@ -275,28 +283,35 @@ namespace ClientServerDiplom
         /// <param name="e">Loaded</param>
         private void StartStar(object sender, RoutedEventArgs e)
         {
-            int idProject = Int32.Parse((sender as StackPanel).Tag.ToString()) - 1;          
-            double ratingProject = Person.listProject[idProject].projectSettings.ratingProject;
+            int idProject = Int32.Parse((sender as StackPanel).Tag.ToString()) - 1;
+            listPanelStars.Add((sender as StackPanel));
+            DrawStarsForProject(sender as StackPanel, Person.listProject[idProject].projectSettings.ratingProject);
+        }
 
-            (sender as StackPanel).ToolTip = $"Рейтинг: {ratingProject}";          
+        /// <summary>
+        /// Рисует звёзды рейтинга у данного проекта
+        /// </summary>
+        /// <param name="sender">Панель с звёздами</param>
+        /// <param name="ratingProject">Рейниг проекта</param>
+        private static void DrawStarsForProject(StackPanel sender, double ratingProject)
+        {              
+            sender.ToolTip = $"Рейтинг: {ratingProject}";
 
             if (ratingProject != 0)
             {
                 List<Polygon> stars = (sender as StackPanel).Children.OfType<Polygon>().ToList();
                 int tempStar = 0;
-                
-              //  int temp = ((((int)ratingProject) == ratingProject) ? 0 : 1);
 
-                for(; ratingProject-- >= 1; tempStar++)
+                for (; ratingProject-- >= 1; tempStar++)
                 {
                     try
                     {
                         stars[tempStar].Fill = Brushes.Yellow;
                     }
                     catch { break; }
-                }             
+                }
                 /// Если осталась дробная часть в рейтинге
-                if(++ratingProject > 0)
+                if (++ratingProject > 0)
                 {
                     LinearGradientBrush linearGradient = new LinearGradientBrush
                     {
@@ -312,14 +327,15 @@ namespace ClientServerDiplom
 
                     linearGradient.GradientStops.Add(new GradientStop
                     {
-                        Color = Color.FromRgb(255,255,0),
-                        Offset = 1 - ratingProject 
+                        Color = Color.FromRgb(255, 255, 0),
+                        Offset = 1 - ratingProject
                     });
 
                     stars[tempStar].Fill = linearGradient;
                 }
             }
         }
+
 
         /// <summary>
         /// Нажание на панель с проектами
@@ -503,7 +519,7 @@ namespace ClientServerDiplom
             #endregion       
 
             string[] exp = nameProject.Split('.');
-
+     
             thisWindow.nameProjTB.Text = nameProject.Replace("." + exp[exp.Length - 1], string.Empty);
             thisWindow.nameProjTB.Tag = nameProject;
             thisWindow.nameProjTB.MaxLength = 45 - (exp[exp.Length - 1].Length + 1);
@@ -531,6 +547,19 @@ namespace ClientServerDiplom
             {
                 thisWindow.comboBoxTypeProj.SelectedIndex = viewApp - 1;
             }
+
+            #region Устанавливаем новый рейтинг у проекта
+            double oldRating = (thisWindow.listViewProjects.SelectedItem as MyItemProject).ratingProject;
+          
+            if(rating != oldRating)
+            {
+                int index = thisWindow.listViewProjects.SelectedIndex;
+                StackPanel panelStar = listPanelStars[index];
+
+                DrawStarsForProject(panelStar, rating);
+            }
+
+            #endregion
         }
 
 
@@ -648,19 +677,29 @@ namespace ClientServerDiplom
             MyItemProject myItem = new MyItemProject(++Person.countProject, idProjectAtDB, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
             myItems.Add(myItem);
             Person.listProject.Add(new Project(myItem));
-            RefreshListView(myItems);
-            MessageBox.Show("Файл успешно добавлен!");
+       //     RefreshListView(myItems);
+            MessageBox.Show("Файл успешно добавлен!");        
         }
 
         /// <summary>
-        /// Обновляет таблицу с проектами
+        /// Изменение имени у проекта
         /// </summary>
-        /// <param name="myItems">Данные которые будут отображатся в ListView</param>
-        private static void RefreshListView(List<MyItemProject> myItems)
-        {          
-            listStatic.ItemsSource = myItems;
-            listStatic.Items.Refresh();
+        /// <param name="newNameProject">Новое имя</param>
+        public static void RenameProject(string newNameProject)
+        {
+            myItems[listStatic.SelectedIndex].nameProject = newNameProject;
+       //     RefreshListView(myItems);
         }
+
+        ///// <summary>
+        ///// Обновляет таблицу с проектами
+        ///// </summary>
+        ///// <param name="myItems">Данные которые будут отображатся в ListView</param>
+        //private static void RefreshListView(List<MyItemProject> myItems)
+        //{          
+        //    listStatic.ItemsSource = myItems;
+        //    listStatic.Items.Refresh();
+        //}
 
         /// <summary>
         /// Загрузка выбранного файла

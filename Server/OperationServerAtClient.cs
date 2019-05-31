@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 
 namespace Server
@@ -66,7 +67,7 @@ namespace Server
         /// <param name="login">Логин</param>
         public static void CheckFullInfoOfPerson(Socket client, string login)
         {
-            string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut", "@countProjectOut" };
+            string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut", "@countProjectOut","@noteOut" };
             string[] arrParmData = { login };
             string[] arrParmOut = MySqlClass.MySQLInOut("CheckFullInfoPerson", arrParm, arrParmData);
          
@@ -80,7 +81,7 @@ namespace Server
             }
 
             ServerClass.SendMsgClient(client, 1024, 3, arrParmOut[0], arrParmOut[1], Int32.Parse(arrParmOut[2]),
-                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5], arrParmOut[6]);
+                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5], arrParmOut[6], arrParmOut[7]);
             
         }
 
@@ -127,8 +128,8 @@ namespace Server
         /// <param name="infoUser">Информация пользователя</param>
         public static void UpdateInfoAboutPerson(string login , string[] infoUser)
         {
-            string[] arrParm = { "@loginIn", "@nameIn", "@lastnameIn", "@imageIn", "@emailIn" };
-            string[] arrParmData = { login, infoUser[0], infoUser[1], infoUser[2], infoUser[3] };
+            string[] arrParm = { "@loginIn", "@nameIn", "@lastnameIn", "@imageIn", "@emailIn", "@noteIn" };
+            string[] arrParmData = { login, infoUser[0], infoUser[1], infoUser[2], infoUser[3], infoUser[4] };
             MySqlClass.MySQLIn("UpdateInfoAboutPerson", arrParm, arrParmData);
         }
 
@@ -262,16 +263,26 @@ namespace Server
         /// <summary>
         /// Изменяет данные у проекта в базе 
         /// </summary>
+        /// <param name="client">Клиент</param>
         /// <param name="id">id проекта</param>
         /// <param name="name">Имя</param>
         /// <param name="viewApp">Категория</param>
         /// <param name="note">Описание</param>
         /// <param name="hrefImage">Ссылка на изображение</param>
-        public static void UpdateInfoForProject(int id,string name, int viewApp, string note, string hrefImage)
+        public static void UpdateInfoForProject(Socket client,int id,string name, int viewApp, string note, string hrefImage)
         {
-            string[] arrParm = { "@idProj", "@nameProj", "@viewApp", "@note", "@hrefImage" };
+            string[] arrParm = { "@idProj", "@nameProj", "@viewApp", "@note", "@hrefImage", "@isRenameProj" , "@oldNameProj" };
             string[] arrParmData = { id.ToString(), name, viewApp.ToString(), note, hrefImage };
-            MySqlClass.MySQLIn("UpdateInfoForProject", arrParm, arrParmData);
+            string[] arrParmOut = MySqlClass.MySQLInOut("UpdateInfoForProject", arrParm, arrParmData);
+
+            if (arrParmOut[0].Equals("1"))
+            {
+                ServerClass.SendMsgClient(client, 512, 1007, name);
+
+                string nameUser = ServerClass.clients.FirstOrDefault(f => f.socket == client).name;
+                File.Move(ServerClass.pathProjectFile + "\\" + nameUser + "\\" + arrParmOut[1]  , ServerClass.pathProjectFile + "\\" + nameUser + "\\" + name);
+            }
+
         }
 
         #endregion 
@@ -335,7 +346,7 @@ namespace Server
             }
             */
             
-            Buffer.BlockCopy(infoFile, 0, file.progressSend, file.progress, countRecByte);
+            Buffer.BlockCopy(infoFile, 0, file.progressSend, file.progress - countRecByte, countRecByte);
 
             ServerClass.SendMsgClient(file.user.socket, 256, 1001);
         }

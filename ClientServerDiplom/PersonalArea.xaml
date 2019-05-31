@@ -4,9 +4,8 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"  
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ClientServerDiplom"
         mc:Ignorable="d"
-        Title="Personal Area" WindowStartupLocation="CenterScreen" TitleCaps="False" WindowTitleBrush="#FF8141F1" Height="450" Width="800" Loaded="Start" ResizeMode="CanMinimize">
+        Title="Personal Area" WindowStartupLocation="CenterScreen" TitleCaps="False" WindowTitleBrush="#FF8141F1" Height="525" Width="800" Loaded="Start" ResizeMode="CanMinimize">
 
     <Window.Resources>
         <Style x:Key="SomeButtonStyle" TargetType="{x:Type Button}">
@@ -21,6 +20,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
 
     </Window.Resources>
 
@@ -47,7 +47,8 @@
             </Label>
         </StackPanel>
         <Rectangle x:Name="image" HorizontalAlignment="Left" Height="170" Margin="10,10,0,0" VerticalAlignment="Top" Width="170" OpacityMask="White" Fill="Gray"/>
-        <StackPanel x:Name="infoPanel" HorizontalAlignment="Left" Margin="308,51,0,0" VerticalAlignment="Top" Width="330">
+        <ScrollViewer HorizontalAlignment="Left" Margin="308,34,0,0" VerticalAlignment="Top" Height="239">
+        <StackPanel x:Name="infoPanel"  Width="330">
             <StackPanel Margin="10" Orientation="Horizontal" HorizontalAlignment="Stretch" Width="Auto">
                 <Label Content="Имя : " Width="75" FontWeight="Bold" FontStyle="Italic"></Label>
                 <TextBox x:Name="nameUser" Text="" Width="214" MaxLength="60" TextChanged="InfoChanged" Background="White"></TextBox>
@@ -69,13 +70,20 @@
                 <TextBox x:Name="refImage" Text="" Width="214" MaxLength="350" TextChanged="InfoChanged"></TextBox>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Margin="10,15,10,10" RenderTransformOrigin="0.5,0.5">
+                <Label Margin="10,35,0,0" Content="О себе :" FontWeight="Bold"/>
+
+                <RichTextBox x:Name="noteUser" Height="100" Margin="10,0,10,10" TextChanged="InfoChanged"/>
+
+                <StackPanel Orientation="Horizontal" Margin="10,15,10,10" RenderTransformOrigin="0.5,0.5">
                 <Button x:Name="confirmInfoUser" Margin="0,0,105,0" Content="Подтвердить" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="102" Height="31" Click="ConfirmInfoUser"/>
-                <Button x:Name="changeUserInfo" Content="Изменить" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="102" Height="31" IsEnabled="False" Click="ChangeInfo"/>
+
+                <Button x:Name="changeUserInfo" Content="Изменить" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="102" Height="31" IsEnabled="False" Click="ChangeInfo">
+
+                </Button>
             </StackPanel>
         </StackPanel>
-
-        <Grid HorizontalAlignment="Left" Height="223" Margin="4,186,0,0" VerticalAlignment="Top" Width="236">
+        </ScrollViewer>
+        <Grid HorizontalAlignment="Left" Height="88" Margin="4,186,0,0" VerticalAlignment="Top" Width="236">
             <StackPanel Orientation="Horizontal" Margin="0,15,0,0" HorizontalAlignment="Left" Width="236" Height="25" VerticalAlignment="Top">
                 <Label x:Name="countSub" MaxWidth="250" Content="Количество подписчиков : 0" HorizontalAlignment="Left" Margin="0,0,10,0" VerticalAlignment="Top" FontSize="11" FontStyle="Italic"/>
                 <Image Source="http://gsm.meteolk.ru/img/reg.png"></Image>
@@ -87,7 +95,7 @@
         </Grid>
         <Border x:Name="panelPopup" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="800,10,0,0" BorderBrush="Black" BorderThickness="1,1,0,1" CornerRadius="5" Background="#BFFFFFFF" Width="138" Visibility="Hidden" >
             <StackPanel  Margin="-1,0,0,0">
-                <Button x:Name="mainPopupB" Content="ГЛАВНАЯ" HorizontalAlignment="Left" Style="{StaticResource SomeButtonStyle}" VerticalAlignment="Top" Margin="0,10,0,0" Width="144" Height="35" BorderThickness="1" FontFamily="Segoe UI, Lucida Sans Unicode, Verdana" FontWeight="Bold" FontSize="10" MouseEnter="HoverButton" MouseLeave="LeaveButton">
+                <Button x:Name="mainPopupB" Content="ГЛАВНАЯ" HorizontalAlignment="Left" Style="{StaticResource SomeButtonStyle}" VerticalAlignment="Top" Margin="0,10,0,0" Width="144" Height="35" BorderThickness="1" FontFamily="Segoe UI, Lucida Sans Unicode, Verdana" FontWeight="Bold" FontSize="10" MouseEnter="HoverButton" MouseLeave="LeaveButton" Click="ShowFeedWindow">
                     <Button.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0" SpreadMethod="Reflect">
                             <GradientStop Color="#00727272" Offset="0"/>
@@ -144,7 +152,7 @@
             </StackPanel>
         </Border>
         <Border x:Name="strelkaPopup" HorizontalAlignment="Left" Margin="625,28,0,0" VerticalAlignment="Top" BorderBrush="#FF838383" BorderThickness="1,1,0,1" CornerRadius="5" Background="#0C000000" Visibility="Hidden">
-            <Button x:Name="strelkaBut"  Content=">" Style="{StaticResource SomeButtonStyle}"  Width="31" FontFamily="Arial Narrow" Height="22" Foreground="Black" Background="Transparent" FontWeight="Normal" BorderBrush="{x:Null}" BorderThickness="1,1,0,1" Click="HidePopupPanel" MouseEnter="HoverButton" MouseLeave="LeaveButton"/>
+            <Button x:Name="strelkaBut"  Content=">" Style="{StaticResource SomeButtonStyle}"  Width="31" FontFamily="Arial Narrow" Height="22" Foreground="Black" Background="WhiteSmoke" FontWeight="Normal" BorderBrush="{x:Null}" BorderThickness="1,1,0,1" Click="HidePopupPanel" MouseEnter="HoverButton" MouseLeave="LeaveButton"/>
         </Border>
         <Border x:Name="contextButBorder" BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Margin="728,10,0,0" VerticalAlignment="Top" CornerRadius="3">
             <Button x:Name="contextBut" Content="" Style="{StaticResource SomeButtonStyle}"  Width="40" Height="40" Click="ShowPopupPanel" MouseEnter="HoverButton" MouseLeave="LeaveButton" BorderThickness="0">
@@ -152,6 +160,22 @@
                     <ImageBrush ImageSource="Image/ContexBut.png"/>
                 </Button.Background>
             </Button>
+        </Border>
+
+        <Border HorizontalAlignment="Left" BorderBrush="LightGray" Margin="50,278,0,0" VerticalAlignment="Top" BorderThickness="1" CornerRadius="5">
+            <Grid HorizontalAlignment="Left" Height="199"  VerticalAlignment="Top" Width="702">
+                <Label Content="Статистика публикаций" HorizontalAlignment="Left" VerticalAlignment="Top" FontWeight="Bold" FontFamily="Candara" FontSize="14" Margin="14,10,0,0"/>
+                <StackPanel x:Name="statisticPublic" HorizontalAlignment="Left" Height="123" Margin="38,39,0,0" VerticalAlignment="Top" Width="624"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"  Margin="520,167,0,0" VerticalAlignment="Top" >
+                    <TextBlock>Меньше</TextBlock>
+                    <Rectangle Margin="5,1,0,0" Width="10" Height="10" Fill="DarkGreen" Opacity="0.20"></Rectangle>
+                    <Rectangle Margin="5,1,0,0" Width="10" Height="10" Fill="DarkGreen" Opacity="0.35"></Rectangle>
+                    <Rectangle Margin="5,1,0,0" Width="10" Height="10" Fill="DarkGreen" Opacity="0.55"></Rectangle>
+                    <Rectangle Margin="5,1,0,0" Width="10" Height="10" Fill="DarkGreen" Opacity="0.80"></Rectangle>
+                    <Rectangle Margin="5,1,5,0" Width="10" Height="10" Fill="DarkGreen"></Rectangle>
+                    <TextBlock>Больше</TextBlock>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Controls:MetroWindow>

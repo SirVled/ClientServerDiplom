@@ -69,7 +69,7 @@ namespace ServerDiplom
                         int idOperationMySql = reader.ReadInt32();
 
                         string login, password, email, nameProject;
-                        string[] infoUser = new string[4];
+                        string[] infoUser = new string[5];
 
                         switch (idOperationMySql)
                         {
@@ -147,7 +147,7 @@ namespace ServerDiplom
 
                             //UpdateInfoForProject 10. Изменяем информацию о проекте;
                             case 10:                          
-                                OperationServerAtClient.UpdateInfoForProject(reader.ReadInt32(), reader.ReadString(), reader.ReadInt32(), reader.ReadString(), reader.ReadString());
+                                OperationServerAtClient.UpdateInfoForProject(client,reader.ReadInt32(), reader.ReadString(), reader.ReadInt32(), reader.ReadString(), reader.ReadString());
                                 break;
                             #region Работа с почтой
                             // CheckEmail 101. Проверка почты пользователя;
@@ -208,16 +208,22 @@ namespace ServerDiplom
                     
                                         if (fileSend.progressSend == null)
                                         {
-                                            OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
                                             fileSend.progress += countRecByte;
+                                            OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);                                      
                                         }
                                         else
                                         {
+                                            fileSend.progress += countRecByte;
                                             Console.WriteLine(fileSend.progress + "  " + fileSend.progressSend.Length);
-                                          
-                                            OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);
-                                            fileSend.progress += countRecByte;                             
+                                            OperationServerAtClient.ReceivedFile(fileSend, byteFile, countRecByte);                                                                 
                                         }
+
+                                        if(fileSend.progressSend.Length <= fileSend.progress || countRecByte == 0)
+                                        {
+                                            Console.WriteLine(fileSend.progress + "  " + (fileSend.progressSend.Length));
+                                            CreateFile(client);
+                                        }
+
                                         break;
                                     }
                                 }
@@ -225,27 +231,7 @@ namespace ServerDiplom
 
                             // Создание файла по полученным данным от клиента;
                             case 1003:
-                                foreach (var fileSend in fileSettList)
-                                {
-                                    if (fileSend.user.socket == client)
-                                    {
-                                        string directoryUser = pathProjectFile + "\\" + fileSend.user.name;
-
-                                        if (!Directory.Exists(Path.GetExtension(directoryUser)))
-                                        {
-                                            Directory.CreateDirectory(directoryUser);
-                                        }
-                                        string nameFile = directoryUser + "\\" + fileSend.nameF + fileSend.extensionFile;
-
-                                        OperationServerAtClient.AddNewProject(client,fileSend.user.name,(fileSend.nameF + fileSend.extensionFile));
-
-                                        File.WriteAllBytes(nameFile, fileSend.progressSend);
-                                        fileSettList.Remove(fileSend);
-                                
-                                        break;
-                                    }
-                                        
-                                }                               
+                                CreateFile(client);
                                 break;
 
                             // Удаление файла с архива;
@@ -328,6 +314,35 @@ namespace ServerDiplom
                 Thread.CurrentThread.Abort();          
             }
            
+        }
+
+        /// <summary>
+        /// Создание файла по полученным байтом от клиента
+        /// </summary>
+        /// <param name="client">Клиент</param>
+        private static void CreateFile(Socket client)
+        {
+            foreach (var fileSend in fileSettList)
+            {
+                if (fileSend.user.socket == client)
+                {
+                    string directoryUser = pathProjectFile + "\\" + fileSend.user.name;
+
+                    if (!Directory.Exists(Path.GetExtension(directoryUser)))
+                    {
+                        Directory.CreateDirectory(directoryUser);
+                    }
+                    string nameFile = directoryUser + "\\" + fileSend.nameF + fileSend.extensionFile;
+
+                    OperationServerAtClient.AddNewProject(client, fileSend.user.name, (fileSend.nameF + fileSend.extensionFile));
+
+                    File.WriteAllBytes(nameFile, fileSend.progressSend);
+                    fileSettList.Remove(fileSend);
+
+                    break;
+                }
+
+            }
         }
 
         /// <summary>

@@ -21,6 +21,7 @@ namespace ClientServerDiplom
         public static string email { get; set; }  // Почта пользователя;
 
         public static int countProject { get; set; } // Количество проектов;
+        public static string note { get; set; } // Описание (О себе);
 
         public static List<Project> listProject { get; set; } // Лист с списком проектов у данного пользователя;
     }

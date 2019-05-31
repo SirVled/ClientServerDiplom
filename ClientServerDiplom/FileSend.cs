@@ -7,10 +7,10 @@
     {
 
         public FileSend(byte[] fileByte, string nameF,string extensionFile)
-        {      
+        {         
             this.fileByte = fileByte;
             nameFile = nameF;
-            OperationServer.SendMsgClient(512, 1001, this.fileByte.Length, nameF , extensionFile);
+            OperationServer.SendMsgClient(512, 1001, this.fileByte.Length, nameF, extensionFile);          
          //   OperationServer.SendMsgClient(1032, 1002, new System.IO.MemoryStream(fileByte, 0, 1024, true ,true), 1024);
         }
 

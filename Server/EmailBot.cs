@@ -53,18 +53,18 @@ namespace Server
         /// <param name="smtpServer">Имя SMTP-сервера</param>
         /// <param name="from">Адрес отправителя</param>
         /// <param name="password">пароль к почтовому ящику отправителя</param>
-        /// <param name="mailto">Адрес получателя</param>
+        /// <param name="mailTo">Адрес получателя</param>
         /// <param name="caption">Тема письма</param>
         /// <param name="message">Сообщение</param>
         /// <param name="attachFile">Присоединенный файл</param>
         public static void SendMail(string smtpServer, string from, string password,
-        string mailto, string caption, string message, string attachFile = null)
+        string mailTo, string caption, string message, string attachFile = null)
         {
             try
             {
                 MailMessage mail = new MailMessage();
                 mail.From = new MailAddress(from);
-                mail.To.Add(new MailAddress(mailto));
+                mail.To.Add(new MailAddress(mailTo));
                 mail.Subject = caption;
                 mail.Body = message;
                 if (!string.IsNullOrEmpty(attachFile))

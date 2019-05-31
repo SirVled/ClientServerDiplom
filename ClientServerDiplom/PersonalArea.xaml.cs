@@ -1,10 +1,17 @@
 ﻿using MahApps.Metro.Controls;
 using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace ClientServerDiplom
 {
@@ -35,7 +42,9 @@ namespace ClientServerDiplom
             else
                 SetPersonalInfo();
 
-            loginUser.Content = Person.login;         
+            loginUser.Content = Person.login;
+
+            
         }
 
 
@@ -46,13 +55,15 @@ namespace ClientServerDiplom
         {
             try
             {
-                thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
+                thisWindow.Dispatcher.Invoke(new ThreadStart(async () =>
                 {
                     thisWindow.nameUser.Text = Person.name;
                     thisWindow.lastnameUser.Text = Person.lastname;
                     thisWindow.levelUser.Content = "Level : " + Person.level;
                     thisWindow.countLikeUser.Content = Person.likes;
                     thisWindow.emailUser.Text = Person.email;
+                    thisWindow.noteUser.AppendText(Person.note);
+
                     thisWindow.countProject.Content = $"Количество ваших проектов : {Person.countProject}";
                     try
                     {
@@ -60,9 +71,9 @@ namespace ClientServerDiplom
                         thisWindow.refImage.Text = Person.image;
                     }
                     catch { thisWindow.image.Fill = Brushes.Gray; }
-
-
                     thisWindow.IsEnabledObject(false);
+
+                   await SetStatisticPublicUser();
                 }));
             }
             catch(Exception ex) { MessageBox.Show("SetPersonalInfo : " + ex.Message); }
@@ -118,13 +129,16 @@ namespace ClientServerDiplom
                     {
                         if (lastnameUser.Text.Replace(" ", "").Length > 0)
                         {
+                            /// Если пользователь впевые вводит данные 
+                            
+                            string note = new TextRange(noteUser.Document.ContentStart, noteUser.Document.ContentEnd).Text;
                             if (Person.name == null)
                             {
-                                OperationServer.SendMsgClient(1024, 6, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text);
+                                OperationServer.SendMsgClient(1024, 6, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text, note);
                             }
                             else
                             {
-                                OperationServer.SendMsgClient(1024, 7, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text);
+                                OperationServer.SendMsgClient(1024, 7, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text, note);
                             }
 
                             IsEnabledObject(false);
@@ -255,7 +269,18 @@ namespace ClientServerDiplom
             {
                 strelkaPopup.Visibility = Visibility.Visible;
             };
-            panelPopup.BeginAnimation(MarginProperty, StyleUIE.AnimationObject(panelPopup, TimeSpan.FromSeconds(0.30), new Thickness(this.ActualWidth - (panelPopup.ActualWidth + 5), 10, 0, 0), handler));
+            panelPopup.BeginAnimation(MarginProperty, StyleUIE.AnimationObject(panelPopup, TimeSpan.FromSeconds(0.20), new Thickness(this.ActualWidth - (panelPopup.ActualWidth + 5), 10, 0, 0), handler));
+        }
+
+        /// <summary>
+        /// Отображение новостной ленты
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Click</param>
+        private void ShowFeedWindow(object sender, RoutedEventArgs e)
+        {
+            (new FeedPublic()).Show();
+            Close();
         }
 
         #endregion
@@ -299,8 +324,198 @@ namespace ClientServerDiplom
             Person.lastname = lastnameUser.Text;
             Person.image = refImage.Text;
             Person.email = emailUser.Text;
+            Person.note = new TextRange(noteUser.Document.ContentStart, noteUser.Document.ContentEnd).Text;
         }
 
-       
+        /// <summary>
+        /// Устанавливает статистику публикаций пользователя за год
+        /// </summary>
+        private static Task SetStatisticPublicUser()
+        {
+            thisWindow.statisticPublic.Children.Add(SetMonthPublic(DateTime.Now.AddMonths(1)));
+
+            List<StackPanel> listPanelWeek = new List<StackPanel>();
+           
+            for(int i = 0; i < 7; i++)
+            {
+                StackPanel sp = new StackPanel{ Orientation = Orientation.Horizontal , Margin = new Thickness(0,3,0,0)};
+                listPanelWeek.Add(sp);
+                thisWindow.statisticPublic.Children.Add(sp);
+            }
+
+            /// Отнимаем у текущей даты 52 недели
+            DateTime dateYear = DateTime.Now.AddDays(-364);
+
+            int maxCount = 0;
+            Dictionary<string, int> countDist = new Dictionary<string, int>();
+            for (int i = 0; i < Person.listProject.Count; i++)
+            {
+                for (int j = i; j < Person.listProject.Count; j++)
+                {
+                    if (Person.listProject[i].projectSettings.dateAddingProject != 
+                        Person.listProject[j].projectSettings.dateAddingProject)
+                    {
+                        countDist.Add(Person.listProject[i].projectSettings.dateAddingProject, j - i);
+                        if (maxCount < j - i)
+                            maxCount = j - i;
+
+                        i = j - 1;
+                        break;
+                    }
+                    if (j == Person.listProject.Count - 1)
+                    {
+                        countDist.Add(Person.listProject[i].projectSettings.dateAddingProject, j - i + 1);
+                        if (maxCount < j - i + 1)
+                            maxCount = j - i + 1;
+                        i = j;
+                    }
+                }
+            }
+
+            // Заполняем прошедшую статистику за 52 недели 
+            for (int i = 0; i < 52; i++)
+            {
+                for(int j = 0; j < 7; j++)
+                {
+                    dateYear = dateYear.AddDays(1);
+                    if (countDist.ContainsKey(dateYear.ToString("dd-MM-yyyy")))                
+                        listPanelWeek[j].Children.Add(CreateBlockDate(dateYear, maxCount, countDist[dateYear.ToString("dd-MM-yyyy")]));                 
+                    else
+                        listPanelWeek[j].Children.Add(CreateBlockDate(dateYear, maxCount));
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Устанавливает панель с месяцами у статисткики с публикациями 
+        /// </summary>
+        /// <param name="date">Дата с которой идёт отчет месяцев</param>
+        /// <returns>Панель</returns>
+        private static StackPanel SetMonthPublic(DateTime date)
+        {
+            StackPanel sp = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0,5,0,5) };
+
+            
+            for(int i = 0; i < 12; i++)
+            {
+                sp.Children.Add(new TextBlock
+                {
+                    FontSize = 10,
+                    Foreground = Brushes.Black,
+                    FontFamily = new System.Windows.Media.FontFamily("Candara"),
+                    Text = date.ToString("MMMM"),
+                    Margin = new Thickness(20,0,0,0)
+                });
+                date = date.AddMonths(1);
+            }
+
+            return sp;
+        }
+
+        /// <summary>
+        /// Создание блока с публикациями для статистики
+        /// </summary>
+        /// <param name="date">Текущая дата в статистике</param>
+        /// <param name="maxCountPublic">Максимальное количество публикаций за один день</param>
+        /// <param name="tempPublic">Количество публикаций в этот день</param>
+        /// <returns>Блок</returns>
+        private static Rectangle CreateBlockDate(DateTime date, int maxCountPublic , int tempPublic = 0)
+        {
+            Rectangle rec = new Rectangle
+            {             
+                Width = 10,
+                Height = 10,
+                Opacity = 0.75,
+                Margin = new Thickness(2, 0, 0, 0)
+            };
+
+
+            StackPanel sp = new StackPanel();
+
+            TextBlock countPub = new TextBlock
+            {
+                FontSize = 11,
+              //  FontFamily = new System.Windows.Media.FontFamily("Times new Roman"),
+                FontWeight = FontWeights.UltraBold,
+                Text = (tempPublic != 0) ? $"{tempPublic} публикаций на " : "Нет публикаций на "
+            };
+
+            sp.Children.Add(countPub);
+            sp.Children.Add(new TextBlock { Text = date.ToString($"d {MouthName(date.ToString("MMMM"))} yyyy")});
+
+            ToolTip tt = new ToolTip { Content = sp };
+            ToolTipService.SetShowDuration(tt, 0);
+            rec.ToolTip = tt;
+
+            // Если есть публикации в этот день
+            if (tempPublic != 0)
+            {
+                double opacity = 0;
+                rec.Fill = SetPublicColorStatistic(((double)tempPublic / maxCountPublic) * 100, out opacity);
+                rec.Opacity = opacity;
+                
+            }
+            else
+            {
+                rec.Fill = Brushes.LightGray;
+            }
+            return rec;
+        }
+
+        /// <summary>
+        /// Устанавливает цвет у блока с статистикой по его значению
+        /// </summary>
+        /// <param name="percent">Процентное соотношение максимума / и текщего</param>
+        /// <returns>Цвет блока</returns>
+        private static SolidColorBrush SetPublicColorStatistic(double percent, out double opacity)
+        {
+            if (percent < 20)
+                opacity = 0.25;
+            else if (percent >= 20 && percent < 40)
+                opacity = 0.35;
+            else if (percent >= 40 && percent < 60)
+                opacity = 0.55;
+            else if (percent >= 60 && percent < 80)
+                opacity = 0.80;
+            else
+                opacity = 1;
+
+            return Brushes.DarkGreen;
+        }
+
+        private static string MouthName(string mouth)
+        {
+            switch(mouth)
+            {
+                case "Январь":
+                    return "Января";
+                case "Февраль":
+                    return "Февраля";
+                case "Март":
+                    return "Марта";
+                case "Апрель":
+                    return "Апреля";
+                case "Май":
+                    return "Мая";
+                case "Июнь":
+                    return "Июня";
+                case "Июль":
+                    return "Июля";
+                case "Август":
+                    return "Августа";
+                case "Сентябрь":
+                    return "Сентября";
+                case "Октябрь":
+                    return "Октября";
+                case "Ноябрь":
+                    return "Ноября";
+                case "Декабрь":
+                    return "Декарбря";
+            }
+            return null;
+        }
+    
     }
 }

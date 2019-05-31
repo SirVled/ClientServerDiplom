@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.IO;
 using System.Net;
@@ -166,7 +167,7 @@ namespace ClientServerDiplom
         private void SignUp(object sender, RoutedEventArgs e)
         {
             OperationServer.Connected();
-            if (CheckValidVisitor())
+            if (CheckValidVisitorAsync())
             {
                 //Если данные валидны, то сервер отошлет данные на клиент и регистрация будет успешно завершена;
                 OperationServer.SendMsgClient(512, 2, username.Text, email.Text); 
@@ -198,67 +199,29 @@ namespace ClientServerDiplom
         }
         #endregion
 
-        //    /// <summary>
-        //    /// Получение фокуса в TextBox
-        //    /// </summary>
-        //    /// <param name="sender">TextBox</param>
-        //    /// <param name="e">GotFocus</param>
-        //    private void GotFocusLoginLabel(object sender, RoutedEventArgs e)
-        //    {
-        //        TextBox login = (sender as TextBox);
-
-        //        login.Foreground = Brushes.Black;
-        //        login.Text = string.Empty;
-
-        //        login.GotFocus -= GotFocusLoginLabel;
-        //    }
-
-        //    /// <summary>
-        //    /// Переход на форму регистрации
-        //    /// </summary>
-        //    /// <param name="sender">Button</param>
-        //    /// <param name="e">Click</param>
-        //    private void ShowWindowRegestration(object sender, RoutedEventArgs e)
-        //    {
-        //        OperationServer.Connected();
-
-        //        Regestration reg = new Regestration();       
-        //        reg.ShowDialog();
-
-        //    }
-
-        //    /// <summary>
-        //    /// Вход в аккаунт 
-        //    /// </summary>
-        //    /// <param name="sender">Button</param>
-        //    /// <param name="e">Click</param>
-        //    private void GoEnter(object sender, RoutedEventArgs e)
-        //    {
-        //        OperationServer.Connected();
-        //  OperationServer.SendMsgClient(256, 1, loginTb.Text, passwordPb.Password);
-        //        Person.login = loginTb.Text;
-        //    }     
-
         /// <summary>
         /// Проверяет данные на пригодность к регистрации
         /// </summary>    
-        private bool CheckValidVisitor()
+        private bool CheckValidVisitorAsync()
         {
             if (!passwords[0].Password.Equals(passwords[1].Password) || passwords[0].Password.Replace(" ", "").Length < 1)
             {
-                MessageBox.Show("Неверный пароль");
+                //   MessageBox.Show("Неверный пароль");
+                this.ShowMessageAsync("Неверный пароль", "Пароли не совпадают!");
                 return false;
             }
 
             if (username.Text.Replace(" ", "").Length == 0)
             {
-                MessageBox.Show("Введите логин!");
+                //      MessageBox.Show("Введите логин!");
+                this.ShowMessageAsync("Введите логин!", "Поле с логином пустое!");
                 return false;
             }
 
             if(!StyleUIE.regex.IsMatch(email.Text))
             {
-                MessageBox.Show("Неверно введенный email!");
+                //MessageBox.Show("Неверно введенный email!");
+                this.ShowMessageAsync("Неверно введенный email!", "Неверный формат почты!");
                 return false;
             }
             
@@ -285,9 +248,9 @@ namespace ClientServerDiplom
             thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
             {
                 Person.login = thisWindow.userNameTB.Text;
-                (new PersonalArea()).Show();
-                Person.listProject = new System.Collections.Generic.List<Project>();              
-                OperationServer.SendMsgClient(128, 1005, Person.login);            
+                Person.listProject = new System.Collections.Generic.List<Project>();
+                OperationServer.SendMsgClient(128, 1005, Person.login);
+                (new PersonalArea()).Show();                     
                 thisWindow.Close();
             }));
         }     

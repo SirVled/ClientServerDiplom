@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using static ClientServerDiplom.Project;
 
 namespace ClientServerDiplom
 {
@@ -62,8 +63,10 @@ namespace ClientServerDiplom
                                     break;
 
                                 case false:
+                                    Authorization.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(()=> { 
                                     Authorization.thisWindow.signIn.IsEnabled = true;
                                     MessageBox.Show("Неверный логин или пароль!");
+                                    }));
                                     break;
                             }
                             #endregion
@@ -96,6 +99,7 @@ namespace ClientServerDiplom
                             Person.image = reader.ReadString();
                             Person.email = reader.ReadString();
                             Person.countProject = Int32.Parse(reader.ReadString());
+                            Person.note = reader.ReadString();
 
                             PersonalArea.SetPersonalInfo();
                             #endregion
@@ -137,18 +141,18 @@ namespace ClientServerDiplom
                             #region Получение информации о проекте (YouProject)
                             YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
                             {
-                                //string x = reader.ReadString();
-                                //string b = reader.ReadString();
-                                //double c = double.Parse(reader.ReadString().Replace('.', ','));
-                                //int y = Int32.Parse(reader.ReadString());
-                                //string n = reader.ReadString();
-                                //string s = reader.ReadString();
-                                //YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, x, b,
-                                //   c, y, n, s);
-                                YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, reader.ReadString(), reader.ReadString(),
-                                        double.Parse(reader.ReadString().Replace('.', ',')), Int32.Parse(reader.ReadString()),
-                                        reader.ReadString(), reader.ReadString(), Int32.Parse(reader.ReadString()));
-                     
+                                string x = reader.ReadString();
+                                string b = reader.ReadString();
+                                double c = double.Parse(reader.ReadString().Replace('.', ','));
+                                int y = Int32.Parse(reader.ReadString());
+                                string n = reader.ReadString();
+                                string s = reader.ReadString();
+                                YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, x, b,
+                                   c, y, n, s, Int32.Parse(reader.ReadString()));
+                                //YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, reader.ReadString(), reader.ReadString(),
+                                //        double.Parse(reader.ReadString().Replace('.', ',')), Int32.Parse(reader.ReadString()),
+                                //        reader.ReadString(), reader.ReadString(), Int32.Parse(reader.ReadString()));
+
                                 YourProject.thisWindow.settingsPanel.Visibility = Visibility.Visible;                               
                             }));
                             #endregion
@@ -229,6 +233,14 @@ namespace ClientServerDiplom
                             #endregion
                             break;
 
+                        case 1007:
+                            #region Изменение имени у проекта 
+                            YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                            {
+                                YourProject.RenameProject(reader.ReadString());
+                            }));
+                            #endregion
+                            break;
                             #endregion
                     }
 
@@ -272,20 +284,21 @@ namespace ClientServerDiplom
                 uint lengthFile = (uint)fileSend.fileByte.Length;
                 int nextPacketSize = (int)((lengthFile - bytesSend > FileSend.bufferSize) ? FileSend.bufferSize : lengthFile - bytesSend);
 
-                if (bytesSend < lengthFile)
+                if (bytesSend < lengthFile && fileSend != null && nextPacketSize != 0)
                 {
                     MemoryStream packet = new MemoryStream(new byte[nextPacketSize + 8], 0, nextPacketSize + 8, true, true);
 
                     SendFile(520, 1002, bytesSend, packet, nextPacketSize);
+                    bytesSend += nextPacketSize;
                 }
                 else
-                {                   
-                    SendMsgClient(16, 1003);
+                {
                     fileSend = null;
+                    SendMsgClient(16,1003);              
                 }
 
-                if (fileSend != null)
-                    bytesSend += nextPacketSize;
+                //if (fileSend != null)
+                //    bytesSend += nextPacketSize;
 
                 ///Отображение прогресса отправки
                 if (YourProject.loadUIPB != null)
@@ -293,12 +306,11 @@ namespace ClientServerDiplom
                     double percent = ((double)bytesSend / lengthFile) * 100;
                     YourProject.SetValueProgressLoad((int)percent,false);
                 }
-
             }
         }
 
         /// <summary>
-        /// Получение файлов от клиента (по пакетам)
+        /// Получение файлов от сервера (по пакетам)
         /// </summary>
         /// <param name="fileSize">Записываемый буффер</param>  
         /// <param name="infoFile">Количество байт полученных от клиента</param>     
