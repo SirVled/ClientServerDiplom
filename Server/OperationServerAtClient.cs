@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Server
 {
-    public abstract class OperationServerAtClient
+    public class OperationServerAtClient : IPeople
     {
 
         internal static List<FileSett> listFileSend = new List<FileSett>(); // Список файлов который в данный момент скачиваются из сервера
 
+       
         #region База - Сервер
 
         /// <summary>
@@ -384,5 +386,98 @@ namespace Server
                 }
             }
         }
+
+        #region Работа с новостной лентой
+
+        /// <summary>
+        /// Поиск людей по введенной строке
+        /// </summary>
+        /// <param name="stringFind">Подстрока</param>
+        public async void SearchPeople(Socket client,string stringFind)
+        {
+            List<List<dynamic>> peopleInfo;
+
+            string quary = "select `User`.Login, Person.image, Person.Level, Count(*) from Person " +
+                                        " inner join `User` on `User`.idUser = Person.idUser " +
+                                        " inner join HistoryDownload on HistoryDownload.idPerson = Person.idPerson " +
+                        $" where `User`.Login like('%{stringFind}%') " + 
+                        " group by Person.idPerson " ;
+
+          await Task.Run(() => 
+          {
+              peopleInfo = MySqlClass.MySqlQuaryOut(quary, 0, 1, 2, 3);
+              for(int i = 0; i < peopleInfo[0].Count; i++)
+              {
+                  ServerClass.SendMsgClient(client, 2048,2000,peopleInfo[0][i], peopleInfo[1][i], peopleInfo[2][i], peopleInfo[3][i]);
+              }
+
+              ServerClass.SendMsgClient(client, 2048, 2000, "###ThisNull###");
+          });         
+        }
+
+        /// <summary>
+        /// Отправка клиенту топ лучших проектов 
+        /// </summary>
+        /// <param name="client">Клиент</param>
+        public async void SendTopProject(Socket client)
+        {
+            List<List<dynamic>> projectInfo;
+
+            string quary = "SELECT `User`.Login, Project.`Name`, Project.image, Project.Rating, Project.Note  FROM Person " +
+                                       " inner join `HistoryDownload` on HistoryDownload.idPerson = Person.idPerson " +
+                                       " inner join `User` on `User`.idUser = Person.idUser " +
+                                       " inner join Project on Project.idProject = HistoryDownload.idProject " +
+                   " order by(Project.Rating) desc " +
+                   " Limit 10; ";
+
+            await Task.Run(() =>
+            {
+                projectInfo = MySqlClass.MySqlQuaryOut(quary, 0, 1, 2, 3, 4);
+                for (int i = 0; i < projectInfo[0].Count; i++)
+                {
+                    ServerClass.SendMsgClient(client, 2048, 2001, projectInfo[0][i], projectInfo[1][i], projectInfo[2][i], projectInfo[3][i], projectInfo[4][i]);
+                }
+
+                ServerClass.SendMsgClient(client, 2048, 2001, "###ThisNull###");
+            });
+        }
+
+        /// <summary>
+        /// Отправка клиенту топ лучших проектов 
+        /// </summary>
+        /// <param name="client">Клиент</param>
+        /// <param name="login">Имя клиента</param>
+        public async void RandomPeople(Socket client, string login)
+        {
+            List<List<dynamic>> infoUser;
+
+            string quary = "SELECT `User`.Login, Person.`Level`,Person.image FROM Person inner join `User` on `User`.idUser = Person.idUser " +
+                            " JOIN(SELECT RAND() * (SELECT MAX(idPerson) FROM Person) AS max_id ) AS m " +
+                            $" WHERE Person.idPerson >= m.max_id and `User`.Login != '{login}' " +
+                            " ORDER BY Person.idPerson ASC " +
+                            " LIMIT 10; ";
+
+            await Task.Run(() =>
+            {
+                infoUser = MySqlClass.MySqlQuaryOut(quary, 0, 1, 2);
+                for (int i = 0; i < infoUser[0].Count; i++)
+                {
+                    ServerClass.SendMsgClient(client, 2048, 2002, infoUser[0][i], infoUser[1][i], infoUser[2][i]);
+                }
+
+                ServerClass.SendMsgClient(client, 2048, 2002, "###ThisNull###");
+            });
+        }
+        #endregion
+    }
+
+    public interface IPeople
+    {
+
+        void SearchPeople(Socket client, string stringFind);
+
+        void SendTopProject(Socket client);
+
+        void RandomPeople(Socket client, string login);
     }
 }

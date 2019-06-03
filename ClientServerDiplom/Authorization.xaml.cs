@@ -56,8 +56,8 @@ namespace ClientServerDiplom
                 
                 if (OperationServer.serverSocket != null)
                 {
-                    if (Person.login != null)
-                        OperationServer.SendMsgClient(4, -1, Person.login);
+                    if (Person.thisUser.login != null)
+                        OperationServer.SendMsgClient(4, -1, Person.thisUser.login);
 
                     OperationServer.serverSocket.Close();
                 }
@@ -247,9 +247,9 @@ namespace ClientServerDiplom
         {
             thisWindow.Dispatcher.Invoke(new ThreadStart(() =>
             {
-                Person.login = thisWindow.userNameTB.Text;
-                Person.listProject = new System.Collections.Generic.List<Project>();
-                OperationServer.SendMsgClient(128, 1005, Person.login);
+                Person.thisUser.login = thisWindow.userNameTB.Text;
+                Person.thisUser.listProject = new System.Collections.Generic.List<Project>();
+                OperationServer.SendMsgClient(128, 1005, Person.thisUser.login);
                 (new PersonalArea()).Show();                     
                 thisWindow.Close();
             }));

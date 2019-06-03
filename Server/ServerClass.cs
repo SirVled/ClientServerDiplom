@@ -22,6 +22,12 @@ namespace ServerDiplom
 
         public static readonly string pathProjectFile = (Environment.CurrentDirectory + @"\Project File"); // Путь к файлам пользователей которые храняться на сервере;
 
+        #region Интерфейсы
+
+        private static IPeople workPeople = new OperationServerAtClient(); // Интерфейс для работы с новостной лентой;
+
+        #endregion
+
         static void Main(string[] args)
         {
             soket.Bind(new IPEndPoint(IPAddress.Any, port));
@@ -286,8 +292,23 @@ namespace ServerDiplom
                             case 1007:
                                 OperationServerAtClient.ContinueSendFile(client);
                                 break;
-                                #endregion
+                            #endregion
 
+                            #region Работа с людьми\проектами и т.д (2000 - 3000)
+
+                            // Поиск людей по введеной строке;
+                            case 2000:
+                                workPeople.SearchPeople(client,reader.ReadString());
+                                break;
+                            // Получение списока проектов с лучшим рейтингом;
+                            case 2001:
+                                workPeople.SendTopProject(client);
+                                break;
+                            // Получение рандомных людей;
+                            case 2002:
+                                workPeople.RandomPeople(client, reader.ReadString());
+                                break;
+                            #endregion
                         }
                     }
                 }

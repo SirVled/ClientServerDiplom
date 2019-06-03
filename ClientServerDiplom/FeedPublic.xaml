@@ -8,35 +8,130 @@
         xmlns:local="clr-namespace:ClientServerDiplom"
         mc:Ignorable="d"
         Title="FeedPublic" Height="565" Width="980" Loaded="Start">
+    <Window.Resources>
+        <Style x:Key="SomeButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="brdr" TextBlock.Foreground="{TemplateBinding Foreground}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid HorizontalAlignment="Left" Height="238" Margin="10,10,0,0" VerticalAlignment="Top" Width="239">
-            <TextBox x:Name="searchTB" TextWrapping="Wrap" VerticalAlignment="Top" Controls:TextBoxHelper.Watermark="Поиск" Margin="10,5,10,0" Controls:TextBoxHelper.ClearTextButton="True"/>
-            <ScrollViewer Margin="10,36,0,0" VerticalAlignment="Top">
-                <StackPanel HorizontalAlignment="Left" Height="192" VerticalAlignment="Top" Width="200"/>
+            <TextBox x:Name="searchTB" TextWrapping="Wrap" VerticalAlignment="Top" Controls:TextBoxHelper.Watermark="Поиск" Margin="3,5,37,0" Controls:TextBoxHelper.ClearTextButton="True" RenderTransformOrigin="0.5,0.5">
+                <TextBox.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-0.297"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </TextBox.RenderTransform>
+            </TextBox>
+            <ScrollViewer Margin="10,36,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <ListBox x:Name="searchListBox" HorizontalAlignment="Left" Height="192" VerticalAlignment="Top" Width="215"/>
             </ScrollViewer>
+            <Button x:Name="searchButton" Content="" HorizontalAlignment="Left" Style="{StaticResource SomeButtonStyle}" Margin="206,6,0,0" VerticalAlignment="Top" Width="30" MouseEnter="HoverButton" MouseLeave="LeaveButton" BorderThickness="0" Height="25" Cursor="Hand" Click="SearchPeople">
+                <Button.Background>
+                    <ImageBrush ImageSource="https://avatanplus.com/files/resources/mid/5753202b8c9ed1551cb5aa38.png"></ImageBrush>
+                </Button.Background>
+            </Button>
         </Grid>
-        <ScrollViewer HorizontalAlignment="Left" Margin="10,253,0,0" VerticalAlignment="Top" Width="239">
-            <StackPanel Width="250" Height="270"></StackPanel>
+        <ScrollViewer HorizontalAlignment="Left" Margin="10,309,0,0" VerticalAlignment="Top" Width="239" Height="214">
+            <ListBox x:Name="topProject"></ListBox>
         </ScrollViewer>
         <ScrollViewer HorizontalAlignment="Left"  Margin="254,10,0,0" VerticalAlignment="Top" Width="509">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Width="493" Height="493" Margin="10,10,10,10">
-
+                <ListBox VerticalAlignment="Top" Height="435" Background="#FFEEEEEE"></ListBox>
+                <TextBlock Margin="42,15,33,15" TextWrapping="Wrap" Foreground="#FF110080" >
+                    <Run FontSize="14">Подпишитесь на людей чтобы получать от них новости о их публикациях при помощи вкладки</Run>
+                    <Run FontSize="14" FontStyle="Italic" FontWeight="ExtraBlack" TextDecorations="{x:Null}" Foreground="#FF171717">Поиск</Run>
+                    <Run FontSize="14">в верхнем левом углу</Run>
+                </TextBlock>
             </StackPanel>
         </ScrollViewer>
         <Grid HorizontalAlignment="Left" Height="100" Margin="768,10,0,0" VerticalAlignment="Top" Width="204">
             <Rectangle x:Name="imageUser" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="65" Stroke="Black" VerticalAlignment="Top" Width="65" RadiusY="21.5" RadiusX="21.5"/>
-            <TextBlock x:Name="nameUserLB" Text="Name" HorizontalAlignment="Left" Margin="70,0,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Semibold" FontSize="16" Width="124"/>
-            <StackPanel HorizontalAlignment="Left" Height="29" Margin="70,21,0,0" VerticalAlignment="Top" Width="125">
-
-                <StackPanel Orientation="Horizontal">
-                    <Label x:Name="levelUser" MaxWidth="80" Content="Level : 0" FontFamily="Segoe WP Semibold" FontSize="12" Background="Transparent" Foreground="#FF5100DE"></Label>
-                    <Image Source="https://avatars.mds.yandex.net/get-pdb/1043736/19fcd063-dc04-4bc5-881a-80d86be2c713/orig" Width="20" Height="20"/>
+            <StackPanel>
+                <TextBlock x:Name="nameUserLB" Text="Name" HorizontalAlignment="Left" Margin="70,0,0,0" VerticalAlignment="Top" TextWrapping="Wrap" FontFamily="Segoe UI Semibold" FontSize="16" Width="124"/>
+                <StackPanel HorizontalAlignment="Left" Height="29" Margin="70,0,0,0" VerticalAlignment="Top" Width="125">
+                    <StackPanel Orientation="Horizontal">
+                        <Label x:Name="levelUser" MaxWidth="80" Content="Level : 0" FontFamily="Segoe WP Semibold" FontSize="12" Background="Transparent" Foreground="#FF5100DE"></Label>
+                        <Image Source="https://avatars.mds.yandex.net/get-pdb/1043736/19fcd063-dc04-4bc5-881a-80d86be2c713/orig" Width="20" Height="20"/>
+                    </StackPanel>
+                    <ProgressBar x:Name="userLvlPB" Value="0" Width="100" HorizontalAlignment="Left"/>
                 </StackPanel>
-                <ProgressBar x:Name="userLvlPB" Value="0" Width="100" HorizontalAlignment="Left">
-                    
-                </ProgressBar>
+
             </StackPanel>
+            <Button Content="v" HorizontalAlignment="Left" Margin="159,69,0,0" VerticalAlignment="Top" Width="35" Height="31" RenderTransformOrigin="0.5,0.5" Click="ShowOrHidePanel" Cursor="Hand"/>
 
         </Grid>
+        <StackPanel HorizontalAlignment="Left" Margin="778,115,0,0" VerticalAlignment="Top" Width="184" >
+            <Border x:Name="panelMoveProg" BorderThickness="1" BorderBrush="Black" CornerRadius="3" Height="10">
+                <Grid HorizontalAlignment="Left" Height="180" VerticalAlignment="Top" Width="180" Margin="0,-1">
+                    <Button x:Name="persArea" Content="Личный кабинет" HorizontalAlignment="Left" Style="{StaticResource SomeButtonStyle}" VerticalAlignment="Top" Margin="0,15,0,0" Width="180" Height="35" BorderThickness="1" FontFamily="Segoe UI, Lucida Sans Unicode, Verdana" FontWeight="Bold" FontSize="11" MouseEnter="HoverButton" MouseLeave="LeaveButton" Click="MoveWindow" Controls:ControlsHelper.ContentCharacterCasing="Normal">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0" SpreadMethod="Reflect">
+                                <GradientStop Color="#00727272" Offset="0"/>
+                                <GradientStop Color="#004F3333" Offset="0.994"/>
+                                <GradientStop Color="#0C000000" Offset="0.504"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                        <Button.BorderBrush>
+                            <LinearGradientBrush EndPoint="0.5,0.5" StartPoint="0,0.5" SpreadMethod="Reflect">
+                                <GradientStop Color="#00000000" Offset="0"/>
+                                <GradientStop Color="Black" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.BorderBrush>
+                    </Button>
+                    <Button x:Name="persProj" Content="Ваши проекты" HorizontalAlignment="Left" Style="{StaticResource SomeButtonStyle}" VerticalAlignment="Top" Margin="0,55,0,0" Width="180" Height="35" Click="MoveWindow" BorderThickness="1" FontFamily="Segoe UI, Lucida Sans Unicode, Verdana" FontWeight="Bold" FontSize="11" MouseEnter="HoverButton" MouseLeave="LeaveButton" Controls:ControlsHelper.ContentCharacterCasing="Normal">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0" SpreadMethod="Reflect">
+                                <GradientStop Color="#00727272" Offset="0"/>
+                                <GradientStop Color="#004F3333" Offset="0.994"/>
+                                <GradientStop Color="#0C000000" Offset="0.504"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                        <Button.BorderBrush>
+                            <LinearGradientBrush EndPoint="0.5,0.5" StartPoint="0,0.5" SpreadMethod="Reflect">
+                                <GradientStop Color="#00000000" Offset="0"/>
+                                <GradientStop Color="Black" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.BorderBrush>
+                    </Button>
+                    <Button x:Name="persExit" Content="Выйти" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="50,135,0,0" Width="80" Height="35" BorderThickness="1" Click="MoveWindow" FontFamily="Segoe UI, Lucida Sans Unicode, Verdana" FontWeight="Bold" FontSize="11"  Controls:ControlsHelper.ContentCharacterCasing="Normal" BorderBrush="#FF0A0A0A" Background="White"/>
+                </Grid>
+            </Border>
+
+
+            <TextBlock Margin="0,10,0,0" TextAlignment="Center" Text="Возможно будет интересно" FontFamily="Segoe WP" FontSize="14"></TextBlock>
+            <Border BorderThickness="1" BorderBrush="Black" CornerRadius="3" Margin="0,5,0,0" Height="200">
+                <ListBox x:Name="interestingLB" HorizontalAlignment="Left" Height="199" VerticalAlignment="Top" Width="183"  />
+            </Border>
+        </StackPanel>
+        <Label x:Name="searchNull" Content="Поиск не дал результата" HorizontalAlignment="Left" Margin="39,125,0,0" VerticalAlignment="Top" FontSize="14" RenderTransformOrigin="0.5,0.5" Visibility="Hidden">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-37.917"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
+        <StackPanel x:Name="feedNullP" Margin="431,152,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Image  HorizontalAlignment="Left" Height="96" Stretch="UniformToFill"  VerticalAlignment="Top" Width="157" Source="Image/disKaka.png"/>
+            <TextBlock TextAlignment="Center" FontSize="14">Новостей нет</TextBlock>
+        </StackPanel>
+        <Label Content="Список лучших по рейтингу проектов" HorizontalAlignment="Left" Margin="3,261,0,0" VerticalAlignment="Top" FontStyle="Italic" FontSize="14"/>
+
     </Grid>
 </Controls:MetroWindow>

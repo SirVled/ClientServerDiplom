@@ -22,11 +22,12 @@ namespace ClientServerDiplom
     {
 
         private static PersonalArea thisWindow; // Текущее окно;
-        private bool changeInfoUser = false; // Проверка на изменение данных пользователя;
+        private bool changeInfoUser = false; // Проверка на изменение данных пользователя;      
 
         public PersonalArea()
         {
             InitializeComponent();
+
             thisWindow = this;
         }
 
@@ -37,12 +38,12 @@ namespace ClientServerDiplom
         /// <param name="e">Загрузка</param>
         private void Start(object sender, RoutedEventArgs e)
         {
-            if (Person.email == null)          
-                OperationServer.SendMsgClient(64, 4, Person.login);         
+            if (Person.thisUser.email == null)          
+                OperationServer.SendMsgClient(64, 4, Person.thisUser.login);         
             else
                 SetPersonalInfo();
 
-            loginUser.Content = Person.login;
+            loginUser.Content = Person.thisUser.login;
 
             
         }
@@ -57,18 +58,18 @@ namespace ClientServerDiplom
             {
                 thisWindow.Dispatcher.Invoke(new ThreadStart(async () =>
                 {
-                    thisWindow.nameUser.Text = Person.name;
-                    thisWindow.lastnameUser.Text = Person.lastname;
-                    thisWindow.levelUser.Content = "Level : " + Person.level;
-                    thisWindow.countLikeUser.Content = Person.likes;
-                    thisWindow.emailUser.Text = Person.email;
-                    thisWindow.noteUser.AppendText(Person.note);
+                    thisWindow.nameUser.Text = Person.thisUser.name;
+                    thisWindow.lastnameUser.Text = Person.thisUser.lastname;
+                    thisWindow.levelUser.Content = "Level : " + Person.thisUser.level;
+                    thisWindow.countLikeUser.Content = Person.thisUser.likes;
+                    thisWindow.emailUser.Text = Person.thisUser.email;
+                    thisWindow.noteUser.AppendText(Person.thisUser.note);
 
-                    thisWindow.countProject.Content = $"Количество ваших проектов : {Person.countProject}";
+                    thisWindow.countProject.Content = $"Количество ваших проектов : {Person.thisUser.countProject}";
                     try
                     {
-                        thisWindow.image.Fill = new ImageBrush(new BitmapImage(new Uri(Person.image, UriKind.Absolute)));
-                        thisWindow.refImage.Text = Person.image;
+                        thisWindow.image.Fill = new ImageBrush(new BitmapImage(new Uri(Person.thisUser.image, UriKind.Absolute)));
+                        thisWindow.refImage.Text = Person.thisUser.image;
                     }
                     catch { thisWindow.image.Fill = Brushes.Gray; }
                     thisWindow.IsEnabledObject(false);
@@ -88,7 +89,7 @@ namespace ClientServerDiplom
         /// <param name="e">Click</param>
         private void GoToHistoryWind(object sender, RoutedEventArgs e)
         {
-            OperationServer.SendMsgClient(64,5,Person.login);
+            OperationServer.SendMsgClient(64,5, Person.thisUser.login);
         }
 
         /// <summary>
@@ -98,8 +99,8 @@ namespace ClientServerDiplom
         /// <param name="e">Click</param>
         private void LogoutUser(object sender, RoutedEventArgs e)
         {
-            OperationServer.SendMsgClient(128, -1, Person.login);
-            Person.email = null;
+            OperationServer.SendMsgClient(128, -1, Person.thisUser.login);
+            Person.thisUser.email = null;
             (new Authorization()).Show();
             Close();
         }
@@ -132,13 +133,13 @@ namespace ClientServerDiplom
                             /// Если пользователь впевые вводит данные 
                             
                             string note = new TextRange(noteUser.Document.ContentStart, noteUser.Document.ContentEnd).Text;
-                            if (Person.name == null)
+                            if (Person.thisUser.name == null)
                             {
-                                OperationServer.SendMsgClient(1024, 6, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text, note);
+                                OperationServer.SendMsgClient(1024, 6, Person.thisUser.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text, note);
                             }
                             else
                             {
-                                OperationServer.SendMsgClient(1024, 7, Person.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text, note);
+                                OperationServer.SendMsgClient(1024, 7, Person.thisUser.login, nameUser.Text, lastnameUser.Text, CheckRefImage(refImage.Text), emailUser.Text, note);
                             }
 
                             IsEnabledObject(false);
@@ -320,11 +321,11 @@ namespace ClientServerDiplom
         /// </summary>
         private void SetInfoAboutPerson()
         {
-            Person.name = nameUser.Text;
-            Person.lastname = lastnameUser.Text;
-            Person.image = refImage.Text;
-            Person.email = emailUser.Text;
-            Person.note = new TextRange(noteUser.Document.ContentStart, noteUser.Document.ContentEnd).Text;
+            Person.thisUser.name = nameUser.Text;
+            Person.thisUser.lastname = lastnameUser.Text;
+            Person.thisUser.image = refImage.Text;
+            Person.thisUser.email = emailUser.Text;
+            Person.thisUser.note = new TextRange(noteUser.Document.ContentStart, noteUser.Document.ContentEnd).Text;
         }
 
         /// <summary>
@@ -348,23 +349,23 @@ namespace ClientServerDiplom
 
             int maxCount = 0;
             Dictionary<string, int> countDist = new Dictionary<string, int>();
-            for (int i = 0; i < Person.listProject.Count; i++)
+            for (int i = 0; i < Person.thisUser.listProject.Count; i++)
             {
-                for (int j = i; j < Person.listProject.Count; j++)
+                for (int j = i; j < Person.thisUser.listProject.Count; j++)
                 {
-                    if (Person.listProject[i].projectSettings.dateAddingProject != 
-                        Person.listProject[j].projectSettings.dateAddingProject)
+                    if (Person.thisUser.listProject[i].projectSettings.dateAddingProject !=
+                        Person.thisUser.listProject[j].projectSettings.dateAddingProject)
                     {
-                        countDist.Add(Person.listProject[i].projectSettings.dateAddingProject, j - i);
+                        countDist.Add(Person.thisUser.listProject[i].projectSettings.dateAddingProject, j - i);
                         if (maxCount < j - i)
                             maxCount = j - i;
 
                         i = j - 1;
                         break;
                     }
-                    if (j == Person.listProject.Count - 1)
+                    if (j == Person.thisUser.listProject.Count - 1)
                     {
-                        countDist.Add(Person.listProject[i].projectSettings.dateAddingProject, j - i + 1);
+                        countDist.Add(Person.thisUser.listProject[i].projectSettings.dateAddingProject, j - i + 1);
                         if (maxCount < j - i + 1)
                             maxCount = j - i + 1;
                         i = j;

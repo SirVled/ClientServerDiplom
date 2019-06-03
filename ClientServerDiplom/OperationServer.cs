@@ -1,4 +1,4 @@
-п»їusing System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,16 +19,16 @@ namespace ClientServerDiplom
         private const int port = 5455;
         private const string server = "127.0.0.1";
 
-        public static Socket serverSocket; // РЎРѕРєРµС‚ РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє СЃРµСЂРІРµСЂСѓ
-        public static Thread thread; // РџРѕС‚РѕРє РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… РѕС‚ СЃРµСЂРІРµСЂР°;
+        public static Socket serverSocket; // Сокет для подключения к серверу
+        public static Thread thread; // Поток для получения данных от сервера;
         
-        public static FileSend fileSend { get; set; } // Р¤Р°Р№Р», РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РѕС‚РїСЂР°РІР»СЏС‚СЃСЏ РЅР° СЃРµСЂРІРµСЂ;
-        public static FileSend fileReceiving { get; set; } // Р¤Р°Р№Р», РєРѕС‚РѕСЂС‹Р№ СЃРєР°С‡РёРІР°РµС‚СЃСЏ РёР· СЃРµСЂРІРµСЂР°;
+        public static FileSend fileSend { get; set; } // Файл, который будет отправлятся на сервер;
+        public static FileSend fileReceiving { get; set; } // Файл, который скачивается из сервера;
         
         /// <summary>
-        /// РџРѕР»СѓС‡РµРЅРёРµ РѕС‚РІРµС‚Р° РѕС‚ СЃРµСЂРІРµСЂР°
+        /// Получение ответа от сервера
         /// </summary>
-        /// <param name="soketClient">РЎРѕРєРµС‚ РєР»РёРµРЅС‚Р°</param>
+        /// <param name="soketClient">Сокет клиента</param>
         private static void GettingAnswerServer(object soketClient)
         {
             Socket soket = (Socket)soketClient;
@@ -40,7 +40,7 @@ namespace ClientServerDiplom
             {
                 while (true)
                 {
-                    // Р•СЃР»Рё С„Р°Р№Р» РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕС‚РїСЂР°РІР»СЏР» С„Р°Р№Р», РїСЂРѕРґРѕР»Р¶РёС‚СЊ РѕС‚РїСЂР°РІРєСѓ С„Р°Р№Р»Р° РІ РґСЂСѓРіРѕРј РѕРєРЅРµ;
+                    // Если файл пользователь отправлял файл, продолжить отправку файла в другом окне;
                     if (fileSend != null)
                     {
                         ContinueSendFile(ref fileSend.bytesSend);
@@ -54,7 +54,7 @@ namespace ClientServerDiplom
                     {
 
                         case 1:
-                            #region РџСЂРѕРІРµСЂРєР° РґР°РЅРЅС‹С… РЅР° РІР°Р»РёРґРЅРѕСЃС‚СЊ (Connect 1)
+                            #region Проверка данных на валидность (Connect 1)
 
                             switch (reader.ReadBoolean())
                             {
@@ -65,7 +65,7 @@ namespace ClientServerDiplom
                                 case false:
                                     Authorization.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(()=> { 
                                     Authorization.thisWindow.signIn.IsEnabled = true;
-                                    MessageBox.Show("РќРµРІРµСЂРЅС‹Р№ Р»РѕРіРёРЅ РёР»Рё РїР°СЂРѕР»СЊ!");
+                                    MessageBox.Show("Неверный логин или пароль!");
                                     }));
                                     break;
                             }
@@ -73,46 +73,46 @@ namespace ClientServerDiplom
                             break;
 
                         case 2:
-                            #region РџСЂРѕРІРµСЂРєР° РЅР° РїРѕРІС‚РѕСЂСЏСЋС‰РёР№СЃСЏ Р»РѕРіРёРЅ (CheckDataUser 2)
+                            #region Проверка на повторяющийся логин (CheckDataUser 2)
 
                             switch (reader.ReadBoolean())
                             {
                                 case true:
-                                    MessageBox.Show("Р РµРіРёСЃС‚СЂР°С†РёСЏ РїСЂРѕС€Р»Р° СѓСЃРїРµС€РЅРѕ!");
+                                    MessageBox.Show("Регистрация прошла успешно!");
                                     Authorization.CreateNewPerson();
                                     break;
 
                                 case false:
-                                    MessageBox.Show("РўР°РєРѕР№ Р»РѕРіРёРЅ\\email СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚!");
+                                    MessageBox.Show("Такой логин\\email уже существует!");
                                     break;
                             }
                             #endregion
                             break;
 
                         case 3:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ РѕС‚РІРµС‚Р° РѕС‚ СЃРµСЂРІРµСЂР° РЅР°СЃС‡С‘С‚ РґР°РЅРЅС‹С… Рѕ РґР°РЅРЅРѕРј РїРѕР»СЊР·РѕРІР°С‚РµР»Рµ (CheckFullInfoOfPerson 3)
+                            #region Получение ответа от сервера насчёт данных о данном пользователе (CheckFullInfoOfPerson 3)
 
-                            Person.name = reader.ReadString();
-                            Person.lastname = reader.ReadString();
-                            Person.level = reader.ReadInt32();
-                            Person.likes = reader.ReadInt32();
-                            Person.image = reader.ReadString();
-                            Person.email = reader.ReadString();
-                            Person.countProject = Int32.Parse(reader.ReadString());
-                            Person.note = reader.ReadString();
+                            Person.thisUser.name = reader.ReadString();
+                            Person.thisUser.lastname = reader.ReadString();
+                            Person.thisUser.level = reader.ReadInt32();
+                            Person.thisUser.likes = reader.ReadInt32();
+                            Person.thisUser.image = reader.ReadString();
+                            Person.thisUser.email = reader.ReadString();
+                            Person.thisUser.countProject = Int32.Parse(reader.ReadString());
+                            Person.thisUser.note = reader.ReadString();
 
                             PersonalArea.SetPersonalInfo();
                             #endregion
                             break;
 
                         case 4:
-                            #region РџСЂРѕРІРµСЂРєР° РЅР° РЅР°Р»РёС‡РёРµ РІРІРµРґРµРЅРЅРѕР№ РїРѕС‡С‚С‹ РІ Р±Р°Р·Рµ (CheckUnique 4)
+                            #region Проверка на наличие введенной почты в базе (CheckUnique 4)
                             SendMailPass.thisWindow.ShowPanelCode(!reader.ReadBoolean());
                             #endregion
                             break;
 
                         case 5:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ РІ РёР·РјРµРЅРµРЅРёРё РєРѕР»РёС‡РµСЃС‚РІР° Р»Р°Р№РєРѕРІ РЅР° РїСЂРѕС„РёР»Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РѕС‚ СЃРµСЂРІРµСЂР°
+                            #region Получение в изменении количества лайков на профиле пользователя от сервера
 
                             MessageBox.Show("321");
 
@@ -120,25 +120,25 @@ namespace ClientServerDiplom
                             break;
 
                         case 6:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ РѕС‚РІРµС‚ РѕС‚ СЃРµСЂРІРµСЂР° РїРѕ РїРѕРІРѕРґСѓ РѕС‚РїСЂР°РІРєРё РєРѕРґР° РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ;
+                            #region Получение ответ от сервера по поводу отправки кода восстановления;
                             SendMailPass.codeU = reader.ReadInt32();
                             #endregion
                             break;
 
                         case 7:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° СЃ РєР°С‚РµРіРѕСЂРёСЏРјРё РїСЂРѕРµРєС‚Р°
+                            #region Получение списка с категориями проекта
                             YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>{ 
                                 foreach (string item in reader.ReadString().Split('#').ToList())
                                     YourProject.thisWindow.comboBoxTypeProj.Items.Add(item);
 
                                 YourProject.thisWindow.comboBoxTypeProj.Items.RemoveAt(YourProject.thisWindow.comboBoxTypeProj.Items.Count - 1);
-                                SendMsgClient(256, 9, Person.login, (YourProject.thisWindow.listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
+                                SendMsgClient(256, 9, Person.thisUser.login, (YourProject.thisWindow.listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
                             }));
                             #endregion
                             break;
 
                         case 8:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїСЂРѕРµРєС‚Рµ (YouProject)
+                            #region Получение информации о проекте (YouProject)
                             YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
                             {
                                 string x = reader.ReadString();
@@ -158,10 +158,10 @@ namespace ClientServerDiplom
                             #endregion
                             break;
 
-                        #region Р Р°Р±РѕС‚Р° СЃ С„Р°Р№Р»Р°РјРё (1000 - 1999)
+                        #region Работа с файлами (1000 - 1999)
 
                         case 1001:
-                            #region РћС‚РїСЂР°РІРєР° С„Р°Р№Р»Р° СЃРµСЂРІРµСЂСѓ
+                            #region Отправка файла серверу
 
                             if(fileSend != null)
                                 ContinueSendFile(ref fileSend.bytesSend);
@@ -170,7 +170,7 @@ namespace ClientServerDiplom
                             break;
 
                         case 1002:
-                            #region  РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° РїСЂРѕРµРєС‚РѕРІ СЃРѕС…СЂР°РЅРµРЅРЅС‹Рµ РЅР° СЃРµСЂРІРµСЂРµ;
+                            #region  Получение списка проектов сохраненные на сервере;
 
                             int idProject = reader.ReadInt32();
                             string name = reader.ReadString();
@@ -181,13 +181,13 @@ namespace ClientServerDiplom
                             string image = reader.ReadString();
                             string viewApplication = reader.ReadString();
 
-                            Person.listProject.Add(new Project(idProject, name, countVote, rating, date, viewApplication, note, image));
+                            Person.thisUser.listProject.Add(new Project(idProject, name, countVote, rating, date, viewApplication, note, image));
                          
                             #endregion
                             break;
 
                         case 1003:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІ С„Р°Р№Р»Р° РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РѕС‚РїСЂР°РІР»СЏС‚СЃСЏ РѕС‚ СЃРµСЂРІРµСЂР°;
+                            #region Получение свойств файла который будет отправлятся от сервера;
                             fileReceiving = new FileSend(reader.ReadInt32(), reader.ReadString());
                             SendMsgClient(16, 1007);
 
@@ -197,7 +197,7 @@ namespace ClientServerDiplom
                             break;
 
                         case 1004:
-                            #region РџРѕР»СѓС‡РµРЅРёРµ РїР°РєРµС‚РѕРІ С„Р°Р№Р»Р°;
+                            #region Получение пакетов файла;
 
                             int countRecByte = reader.ReadInt32();
                             byte[] byteFile = reader.ReadBytes(countRecByte);                           
@@ -205,7 +205,7 @@ namespace ClientServerDiplom
                             ReceivedFile(fileReceiving, byteFile, countRecByte);
                             fileReceiving.bytesSend += countRecByte;
 
-                            ///РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РїСЂРѕРіСЂРµСЃСЃР° РѕС‚РїСЂР°РІРєРё
+                            ///Отображение прогресса отправки
                             if (YourProject.loadUIPB != null)
                             {
                                 double percent = ((double)fileReceiving.bytesSend / fileReceiving.fileByte.Length) * 100;
@@ -215,7 +215,7 @@ namespace ClientServerDiplom
                             break;
 
                         case 1005:
-                            #region РЎРѕР·РґР°РЅРёРµ С„Р°Р№Р»Р° РїРѕ РїРѕР»СѓС‡РµРЅРЅС‹Рј Р±Р°Р№С‚Р°Рј;                         
+                            #region Создание файла по полученным байтам;                         
                             string nameFile = $"Project File\\{fileReceiving.nameFile}";
                             File.WriteAllBytes(nameFile, fileReceiving.fileByte);
                             fileReceiving = null;
@@ -225,7 +225,7 @@ namespace ClientServerDiplom
                             break;
 
                         case 1006:
-                            #region Р”РѕР±Р°РІР»РµРЅРёРµ РїСЂРѕРµРєС‚Р° РІ Р»РёСЃС‚;
+                            #region Добавление проекта в лист;
                             YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
                             {
                                 YourProject.AddProjectToList(Int32.Parse(reader.ReadString()));
@@ -234,11 +234,77 @@ namespace ClientServerDiplom
                             break;
 
                         case 1007:
-                            #region РР·РјРµРЅРµРЅРёРµ РёРјРµРЅРё Сѓ РїСЂРѕРµРєС‚Р° 
+                            #region Изменение имени у проекта 
                             YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
                             {
                                 YourProject.RenameProject(reader.ReadString());
                             }));
+                            #endregion
+                            break;
+                        #endregion
+
+                        #region Новостная лента(2000-3000)
+                        case 2000:
+                            #region Поиск людей по введеной строке
+                            string loginUser = reader.ReadString();
+
+                            if(!loginUser.Equals("###ThisNull###"))
+                            {
+                                string imageU = reader.ReadString();
+                                int level = Int32.Parse(reader.ReadString());
+                                int countProject = Int32.Parse(reader.ReadString());
+
+                                FeedPublic.listSearchPeople.Add(new Person(loginUser, imageU, level, countProject));
+                            }
+                            else
+                            {
+                                FeedPublic.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(()=> {
+                                    FeedPublic.SetFindsPeople(FeedPublic.listSearchPeople);
+                                }));
+                            }
+                            #endregion
+                            break;
+
+                        case 2001:
+                            #region Получение списока проектов с лучшим рейтингом;
+                            loginUser = reader.ReadString();
+
+                            if (!loginUser.Equals("###ThisNull###"))
+                            {
+                                string nameProj = reader.ReadString();
+                                string imageU = reader.ReadString();
+                                double ratingU = double.Parse(reader.ReadString().Replace('.',','));
+                                string noteU = reader.ReadString();
+
+                                FeedPublic.listTopProject.Add(new Person(loginUser, new Project(new MyItemProject(nameProj,ratingU),imageU,noteU)));
+                            }
+                            else
+                            {
+                                FeedPublic.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() => {
+                                    FeedPublic.SetTopProject(FeedPublic.listTopProject);
+                                    SendMsgClient(128, 2002, Person.thisUser.login);
+                                }));
+                            }
+                            #endregion
+                            break;
+
+                        case 2002:
+                            #region Получение рандомных людей;
+                            loginUser = reader.ReadString();
+
+                            if (!loginUser.Equals("###ThisNull###"))
+                            {
+                                int level = Int32.Parse(reader.ReadString());
+                                string imageU = reader.ReadString();
+                             
+                                FeedPublic.listInterestingPeople.Add(new Person(loginUser,imageU,level,-1));
+                            }
+                            else
+                            {
+                                FeedPublic.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() => {
+                                    FeedPublic.PanelRandomPeople(FeedPublic.listInterestingPeople);
+                                }));
+                            }
                             #endregion
                             break;
                             #endregion
@@ -274,9 +340,9 @@ namespace ClientServerDiplom
         }
 
         /// <summary>
-        /// РЎРѕР·РґР°РЅРёРµ РїР°РєРµС‚РѕРІ С„Р°Р№Р»Р° Рё РѕС‚РїСЂР°РІРєР° РїР°РєРµС‚Р° РЅР° СЃРµСЂРІРµСЂ
+        /// Создание пакетов файла и отправка пакета на сервер
         /// </summary>
-        /// <param name="bytesSend">РљРѕР»РёС‡РµСЃС‚РІРѕ РѕС‚РїСЂР°РІР»РµРЅРЅС‹С… Р±Р°Р№С‚РѕРІ</param>
+        /// <param name="bytesSend">Количество отправленных байтов</param>
         private static void ContinueSendFile(ref int bytesSend)
         {
             if (fileSend != null && fileSend.fileByte.Length != 0)
@@ -300,7 +366,7 @@ namespace ClientServerDiplom
                 //if (fileSend != null)
                 //    bytesSend += nextPacketSize;
 
-                ///РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РїСЂРѕРіСЂРµСЃСЃР° РѕС‚РїСЂР°РІРєРё
+                ///Отображение прогресса отправки
                 if (YourProject.loadUIPB != null)
                 {
                     double percent = ((double)bytesSend / lengthFile) * 100;
@@ -310,11 +376,11 @@ namespace ClientServerDiplom
         }
 
         /// <summary>
-        /// РџРѕР»СѓС‡РµРЅРёРµ С„Р°Р№Р»РѕРІ РѕС‚ СЃРµСЂРІРµСЂР° (РїРѕ РїР°РєРµС‚Р°Рј)
+        /// Получение файлов от сервера (по пакетам)
         /// </summary>
-        /// <param name="fileSize">Р—Р°РїРёСЃС‹РІР°РµРјС‹Р№ Р±СѓС„С„РµСЂ</param>  
-        /// <param name="infoFile">РљРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РїРѕР»СѓС‡РµРЅРЅС‹С… РѕС‚ РєР»РёРµРЅС‚Р°</param>     
-        /// <param name="countRecByte">Р Р°Р·РјРµСЂ РїР°РєРµС‚Р°</param>     
+        /// <param name="fileSize">Записываемый буффер</param>  
+        /// <param name="infoFile">Количество байт полученных от клиента</param>     
+        /// <param name="countRecByte">Размер пакета</param>     
         internal static void ReceivedFile(FileSend file, byte[] infoFile, int countRecByte)
         {
             Buffer.BlockCopy(infoFile, 0, file.fileByte, file.bytesSend, countRecByte);
@@ -322,7 +388,7 @@ namespace ClientServerDiplom
         }
 
         /// <summary>
-        /// РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє СЃРµСЂРІРµСЂСѓ.
+        /// Подключение к серверу.
         /// </summary>
         public static void Connected()
         {
@@ -339,11 +405,11 @@ namespace ClientServerDiplom
         }
 
         /// <summary>
-        /// РћС‚РїСЂР°РІР»СЏРµС‚ РѕС‚РІРµС‚ РЎРµСЂРІРµСЂСѓ
+        /// Отправляет ответ Серверу
         /// </summary>    
-        /// <param name="memoryBit">РљРѕР»-РІРѕ РїР°РјСЏС‚Рё</param>
-        /// <param name="idOperation">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕРїРёСЂР°С†РёРё</param>
-        /// <param name="sendArrData">Р”Р°РЅРЅС‹Рµ РєРѕС‚РѕСЂС‹Р№ РїРѕР»СѓС‡РёС‚ СЃРµСЂРІРµСЂ</param>
+        /// <param name="memoryBit">Кол-во памяти</param>
+        /// <param name="idOperation">Идентификатор опирации</param>
+        /// <param name="sendArrData">Данные который получит сервер</param>
         public static void SendMsgClient( int memoryBit, int idOperation, params dynamic[] sendArrData)
         {
            // try
@@ -366,13 +432,13 @@ namespace ClientServerDiplom
 
 
         /// <summary>
-        /// РћС‚РїСЂР°РІР»СЏРµРј С„Р°Р№Р» РЎРµСЂРІРµСЂСѓ
+        /// Отправляем файл Серверу
         /// </summary>    
-        /// <param name="memoryBit">РљРѕР»-РІРѕ РїР°РјСЏС‚Рё</param>
-        /// <param name="idOperation">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕРїРёСЂР°С†РёРё</param>
-        /// <param name="countSendByte">РљРѕР»РёС‡РµСЃС‚РІРѕ РѕС‚РїСЂР°РІР»РµРЅРЅС‹С… Р±Р°Р№С‚</param>
-        /// <param name="sendPacket">Р‘Р°Р№С‚С‹ РїР°РєРµС‚Р°</param>
-        /// <param name="countSendByte">РљРѕР»РёС‡РµСЃС‚РІРѕ РѕС‚РїСЂР°РІР»СЏРµРјС‹С… Р±Р°Р№С‚</param>
+        /// <param name="memoryBit">Кол-во памяти</param>
+        /// <param name="idOperation">Идентификатор опирации</param>
+        /// <param name="countSendByte">Количество отправленных байт</param>
+        /// <param name="sendPacket">Байты пакета</param>
+        /// <param name="countSendByte">Количество отправляемых байт</param>
         public static void SendFile(int memoryBit, int idOperation, int countSendingByte ,MemoryStream sendPacket, int countSendByte)
         {
             BinaryWriter writer = new BinaryWriter(sendPacket);
@@ -385,3 +451,4 @@ namespace ClientServerDiplom
         }
     }
 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              

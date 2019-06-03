@@ -136,7 +136,7 @@ namespace ClientServerDiplom
                     errorLb.Visibility = Visibility.Hidden;
                     textMsg.Text = textMsg.Text.Replace("###", emailTB.Text.Trim());
                     SetTimer();
-                    this.BeginAnimation(HeightProperty, StyleUIE.AnimationPanel(this, TimeSpan.FromMilliseconds(450), 450));
+                    this.BeginAnimation(HeightProperty, StyleUIE.DoubleAnimation(this.ActualHeight, TimeSpan.FromMilliseconds(450), 450));
                     OperationServer.SendMsgClient(128, 102, mailU);
                 }
                 else

@@ -44,7 +44,11 @@ namespace ServerDiplom
         /// <param name="myConnect">Подключение к базе</param>
         private static void OpenConnect(ref MySqlConnection myConnect)
         {
-            myConnect.Open();
+            try
+            {
+                myConnect.Open();
+            }
+            catch { }
         }
 
         /// <summary>
@@ -70,7 +74,10 @@ namespace ServerDiplom
             {
                 for (int i = 0; i < numberReadRow.Length; i++)
                 {
-                    arrData[i].Add(MyDataReader.GetString(numberReadRow[i]));
+                    if (!MyDataReader.IsDBNull(numberReadRow[i]))
+                        arrData[i].Add(MyDataReader.GetString(numberReadRow[i]));
+                    else
+                        arrData[i].Add("null");
                 }
             }
             mySQLConn.Close();

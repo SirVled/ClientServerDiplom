@@ -15,7 +15,7 @@ namespace ClientServerDiplom
     /// <summary>
     /// Класс, стилей и логики с анимациями
     /// </summary>
-    internal abstract class  StyleUIE 
+    internal abstract class StyleUIE
     {
 
         public static Regex regex = new Regex(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"); // Регулярка на проверку почты;
@@ -30,7 +30,7 @@ namespace ClientServerDiplom
         public static void SetFocusButton(Button take, Button lost)
         {
             int fontSize = (int)take.FontSize;
-            
+
             take.Foreground = Brushes.White;
             take.FontSize = lost.FontSize;
             take.BorderThickness = new Thickness(0, 0, 0, 3);
@@ -52,7 +52,7 @@ namespace ClientServerDiplom
             but1.IsEnabled = false;
             but2.IsEnabled = false;
 
-            panelGot.BeginAnimation(FrameworkElement.MarginProperty, AnimationPanel(panelGot, TimeSpan.FromMilliseconds(350), new Thickness(0)  , but1));
+            panelGot.BeginAnimation(FrameworkElement.MarginProperty, AnimationPanel(panelGot, TimeSpan.FromMilliseconds(350), new Thickness(0), but1));
             Thickness marginPanelLost = (panelLost.Name.Equals("signUpGrid")) ? new Thickness(panelLost.ActualWidth + 15, 0, -panelLost.ActualWidth - 15, 0) : new Thickness(-panelLost.ActualWidth - 15, 0, panelLost.ActualWidth + 15, 0);
             panelLost.BeginAnimation(FrameworkElement.MarginProperty, AnimationPanel(panelLost, TimeSpan.FromMilliseconds(350), marginPanelLost, but2));
         }
@@ -65,11 +65,11 @@ namespace ClientServerDiplom
         /// <param name="moveTo">Конечная точка</param>
         /// <param name="but">Кнопка на которую было произведено действие</param>
         /// <returns>Анимация</returns>
-        private static AnimationTimeline AnimationPanel(Grid panel, TimeSpan duration , Thickness moveTo , Button but = null)
+        private static AnimationTimeline AnimationPanel(Grid panel, TimeSpan duration, Thickness moveTo, Button but = null)
         {
             ThicknessAnimation animation = new ThicknessAnimation
             {
-                Duration = duration, 
+                Duration = duration,
                 From = panel.Margin,
                 To = moveTo
             };
@@ -87,33 +87,6 @@ namespace ClientServerDiplom
         #endregion
 
         #region SendMailPass.xaml.cs
-
-        /// <summary>
-        /// Создание анимации (передвижения вправо\влево)
-        /// </summary>
-        /// <param name="window">Окно которая движется</param>       
-        /// <param name="duration">Время движения анимации</param>
-        /// <param name="moveTo">Конечная точка</param>
-        /// <param name="but">Кнопка на которую было произведено действие</param>
-        /// <returns>Анимация</returns>
-        public static DoubleAnimation AnimationPanel(Window window, TimeSpan duration, double moveTo, Button but = null)
-        {
-            DoubleAnimation animation = new DoubleAnimation
-            {
-                Duration = duration,
-                From = window.ActualHeight,
-                To = moveTo
-            };
-
-            if (but != null)
-            {
-                animation.Completed += (s, e) =>
-                {
-                    but.IsEnabled = true;
-                };
-            }
-            return animation;
-        }
 
         #endregion
 
@@ -141,6 +114,31 @@ namespace ClientServerDiplom
 
             if (completed != null)
                 animation.Completed += completed;
+
+            return animation;
+        }
+
+        /// <summary>
+        /// Создание анимации
+        /// </summary>
+        /// <param name="from">Начальная точка</param>       
+        /// <param name="duration">Время движения анимации</param>
+        /// <param name="to">Конечная точка</param>
+        /// <param name="completed">Действие завершения</param>
+        /// <returns>Анимация</returns>
+        public static DoubleAnimation DoubleAnimation(double from, TimeSpan duration, double to, EventHandler completed = null)
+        {
+            DoubleAnimation animation = new DoubleAnimation
+            {
+                Duration = duration,
+                From = from,
+                To = to
+            };
+
+            if (completed != null)
+            {
+                animation.Completed += completed;
+            }
 
             return animation;
         }

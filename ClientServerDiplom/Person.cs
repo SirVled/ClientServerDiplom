@@ -7,23 +7,46 @@ using System.Windows;
 
 namespace ClientServerDiplom
 {
-    public abstract class Person
+    public class Person
     {
-        public static string login { get; set; }// Логин пользователя;
+        public static Person thisUser = new Person();
 
-        public static string name { get; set; } // Имя пользователя;
-        public static string lastname { get; set; }  // Фамилия пользователя;
+        public Person()
+        {
 
-        public static int level { get; set; } // Уровень пользователя;
-        public static int likes { get; set; }  // Кол-во лайков на аккаунте пользователя;
+        }
 
-        public static string image { get; set; }  // Аватарка пользователя;
-        public static string email { get; set; }  // Почта пользователя;
+        public Person(string login, Project project)
+        {
+            this.login = login;
+            this.project = project;
+        }
 
-        public static int countProject { get; set; } // Количество проектов;
-        public static string note { get; set; } // Описание (О себе);
+        public Person(string login, string image, int level, int countProject)
+        {
+            this.login = login;
+            this.image = image;
+            this.level = level;
+            this.countProject = countProject;
+        }
 
-        public static List<Project> listProject { get; set; } // Лист с списком проектов у данного пользователя;
+        public string login { get; set; }// Логин пользователя;
+
+        public string name { get; set; } // Имя пользователя;
+        public string lastname { get; set; }  // Фамилия пользователя;
+
+        public int level { get; set; } // Уровень пользователя;
+        public int likes { get; set; }  // Кол-во лайков на аккаунте пользователя;
+
+        public string image { get; set; }  // Аватарка пользователя;
+        public string email { get; set; }  // Почта пользователя;
+
+        public int countProject { get; set; } // Количество проектов;
+        public string note { get; set; } // Описание (О себе);
+
+        public List<Project> listProject { get; set; } // Лист с списком проектов у данного пользователя;
+
+        public Project project { get; set; } // Проект 
     }
     
     /// <summary>
@@ -31,7 +54,6 @@ namespace ClientServerDiplom
     /// </summary>
     public class Project
     {
-
         /// <summary>
         /// Класс проекта, который хранит в себе данные которые нужно добавить в ListView
         /// </summary>
@@ -50,6 +72,12 @@ namespace ClientServerDiplom
             {
                 this.idProject = id;   
                 statusProject = status;
+            }
+
+            public MyItemProject(string name, double rating)
+            {
+                nameProject = name;
+                ratingProject = rating;
             }
 
             public int idProject { get; set; } // id проекта;
@@ -80,6 +108,14 @@ namespace ClientServerDiplom
         public Project(MyItemProject myItem)
         {
             projectSettings = myItem;
+        }
+
+        public Project(MyItemProject myItem, string image, string note)
+        {
+            projectSettings = myItem;
+
+            this.image = image;
+            this.note = note;
         }
 
         public MyItemProject projectSettings; // Проект;

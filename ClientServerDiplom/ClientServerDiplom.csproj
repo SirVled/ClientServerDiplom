@@ -145,5 +145,8 @@
     <Resource Include="Image\ContexBut.png" />
     <Resource Include="Image\ContexButHover.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Image\disKaka.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

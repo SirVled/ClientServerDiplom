@@ -69,7 +69,7 @@ namespace ClientServerDiplom
             int tempProject = 0;
             myItems.Clear();
             
-            foreach (var item in Person.listProject)
+            foreach (var item in Person.thisUser.listProject)
             {
                 item.projectSettings.idProject = ++tempProject;
                 myItems.Add(item.projectSettings);
@@ -126,7 +126,7 @@ namespace ClientServerDiplom
                 {
                     nameProjTB.IsEnabled = false;    
                     //Установка данных на настройки проекта
-                    OperationServer.SendMsgClient(256, 9, Person.login, (listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
+                    OperationServer.SendMsgClient(256, 9, Person.thisUser.login, (listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
                 }
 
             }
@@ -161,7 +161,7 @@ namespace ClientServerDiplom
             int elementDelete = -1; // Элемент в массиве который будет удалён;
 
             int temp = -1;
-            foreach(var item in Person.listProject)
+            foreach(var item in Person.thisUser.listProject)
             {
                 if(elementDelete != -1)
                 {
@@ -177,8 +177,8 @@ namespace ClientServerDiplom
                     elementDelete = temp;
                 }
             }
-            Person.countProject--;
-            Person.listProject.RemoveAt(elementDelete);
+            Person.thisUser.countProject--;
+            Person.thisUser.listProject.RemoveAt(elementDelete);
             myItems?.Remove((MyItemProject)listViewProjects.SelectedValue);
            
           //  RefreshListView(myItems);
@@ -250,7 +250,7 @@ namespace ClientServerDiplom
                     {
                         if (CheckForDuplicateNames(fileName[fileName.Length - 1]))
                         {
-                            myItems.Add(new MyItemProject(++Person.countProject, -1,fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
+                            myItems.Add(new MyItemProject(++Person.thisUser.countProject, -1,fileName[fileName.Length - 1], "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0));
                      //       RefreshListView(myItems);
 
                             string[] nameSendFile = fileName[fileName.Length - 1].Split('.');
@@ -285,7 +285,7 @@ namespace ClientServerDiplom
         {
             int idProject = Int32.Parse((sender as StackPanel).Tag.ToString()) - 1;
             listPanelStars.Add((sender as StackPanel));
-            DrawStarsForProject(sender as StackPanel, Person.listProject[idProject].projectSettings.ratingProject);
+            DrawStarsForProject(sender as StackPanel, Person.thisUser.listProject[idProject].projectSettings.ratingProject);
         }
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace ClientServerDiplom
                 OperationServer.SendMsgClient(32, 8); // Получение списка категорий проекта;
             else
             {              
-                OperationServer.SendMsgClient(256, 9, Person.login, (listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
+                OperationServer.SendMsgClient(256, 9, Person.thisUser.login, (listViewProjects.SelectedValue as Project.MyItemProject).nameProject);
             }
         }
 
@@ -674,9 +674,9 @@ namespace ClientServerDiplom
         /// <param name="idProjectAtDB">id проекта в базе данных</param>
         public static void AddProjectToList(int idProjectAtDB)
         {
-            MyItemProject myItem = new MyItemProject(++Person.countProject, idProjectAtDB, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
+            MyItemProject myItem = new MyItemProject(++Person.thisUser.countProject, idProjectAtDB, nameProjectLoadUI.Text, "Загружен", DateTime.Now.ToString("dd-MM-yyyy"), 0);
             myItems.Add(myItem);
-            Person.listProject.Add(new Project(myItem));
+            Person.thisUser.listProject.Add(new Project(myItem));
        //     RefreshListView(myItems);
             MessageBox.Show("Файл успешно добавлен!");        
         }
@@ -714,7 +714,7 @@ namespace ClientServerDiplom
             {
                 if (selectValue.Equals((MyItemProject)listViewProjects.SelectedValue))
                 {
-                    OperationServer.SendMsgClient(256, 1006, Person.login, selectValue.nameProject);
+                    OperationServer.SendMsgClient(256, 1006, Person.thisUser.login, selectValue.nameProject);
                     break;
                 }
             }
