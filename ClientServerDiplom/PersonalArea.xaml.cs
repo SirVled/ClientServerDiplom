@@ -39,7 +39,7 @@ namespace ClientServerDiplom
         private void Start(object sender, RoutedEventArgs e)
         {
             if (Person.thisUser.email == null)          
-                OperationServer.SendMsgClient(64, 4, Person.thisUser.login);         
+                OperationServer.SendMsgClient(64, 4, Person.thisUser.login, true);         
             else
                 SetPersonalInfo();
 
@@ -64,6 +64,7 @@ namespace ClientServerDiplom
                     thisWindow.countLikeUser.Content = Person.thisUser.likes;
                     thisWindow.emailUser.Text = Person.thisUser.email;
                     thisWindow.noteUser.AppendText(Person.thisUser.note);
+                    thisWindow.countSub.Content = $"Количество подписчиков : {Person.thisUser.countSub}";
 
                     thisWindow.countProject.Content = $"Количество ваших проектов : {Person.thisUser.countProject}";
                     try
@@ -74,7 +75,7 @@ namespace ClientServerDiplom
                     catch { thisWindow.image.Fill = Brushes.Gray; }
                     thisWindow.IsEnabledObject(false);
 
-                   await SetStatisticPublicUser();
+                   await SetStatisticPublicUser(thisWindow.statisticPublic,Person.thisUser);
                 }));
             }
             catch(Exception ex) { MessageBox.Show("SetPersonalInfo : " + ex.Message); }
@@ -83,13 +84,14 @@ namespace ClientServerDiplom
         #region Нажатия на кнопки и другие действие привязанные к объктам на форме
 
         /// <summary>
-        /// Переход к окну истории пользователя
+        /// Переход к окну уведомлений пользователя
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Click</param>
         private void GoToHistoryWind(object sender, RoutedEventArgs e)
         {
-            OperationServer.SendMsgClient(64,5, Person.thisUser.login);
+            (new NotificationsWindow()).Show();
+            Close();
         }
 
         /// <summary>
@@ -331,9 +333,9 @@ namespace ClientServerDiplom
         /// <summary>
         /// Устанавливает статистику публикаций пользователя за год
         /// </summary>
-        private static Task SetStatisticPublicUser()
+        public static Task SetStatisticPublicUser(StackPanel statisticPublic, Person person)
         {
-            thisWindow.statisticPublic.Children.Add(SetMonthPublic(DateTime.Now.AddMonths(1)));
+            statisticPublic.Children.Add(SetMonthPublic(DateTime.Now.AddMonths(1)));
 
             List<StackPanel> listPanelWeek = new List<StackPanel>();
            
@@ -341,7 +343,7 @@ namespace ClientServerDiplom
             {
                 StackPanel sp = new StackPanel{ Orientation = Orientation.Horizontal , Margin = new Thickness(0,3,0,0)};
                 listPanelWeek.Add(sp);
-                thisWindow.statisticPublic.Children.Add(sp);
+                statisticPublic.Children.Add(sp);
             }
 
             /// Отнимаем у текущей даты 52 недели
@@ -349,23 +351,23 @@ namespace ClientServerDiplom
 
             int maxCount = 0;
             Dictionary<string, int> countDist = new Dictionary<string, int>();
-            for (int i = 0; i < Person.thisUser.listProject.Count; i++)
+            for (int i = 0; i < person.listProject.Count; i++)
             {
-                for (int j = i; j < Person.thisUser.listProject.Count; j++)
+                for (int j = i; j < person.listProject.Count; j++)
                 {
-                    if (Person.thisUser.listProject[i].projectSettings.dateAddingProject !=
-                        Person.thisUser.listProject[j].projectSettings.dateAddingProject)
+                    if (person.listProject[i].projectSettings.dateAddingProject !=
+                        person.listProject[j].projectSettings.dateAddingProject)
                     {
-                        countDist.Add(Person.thisUser.listProject[i].projectSettings.dateAddingProject, j - i);
+                        countDist.Add(person.listProject[i].projectSettings.dateAddingProject, j - i);
                         if (maxCount < j - i)
                             maxCount = j - i;
 
                         i = j - 1;
                         break;
                     }
-                    if (j == Person.thisUser.listProject.Count - 1)
+                    if (j == person.listProject.Count - 1)
                     {
-                        countDist.Add(Person.thisUser.listProject[i].projectSettings.dateAddingProject, j - i + 1);
+                        countDist.Add(person.listProject[i].projectSettings.dateAddingProject, j - i + 1);
                         if (maxCount < j - i + 1)
                             maxCount = j - i + 1;
                         i = j;

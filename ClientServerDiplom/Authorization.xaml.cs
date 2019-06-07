@@ -249,7 +249,7 @@ namespace ClientServerDiplom
             {
                 Person.thisUser.login = thisWindow.userNameTB.Text;
                 Person.thisUser.listProject = new System.Collections.Generic.List<Project>();
-                OperationServer.SendMsgClient(128, 1005, Person.thisUser.login);
+                OperationServer.SendMsgClient(128, 1005, Person.thisUser.login,true);
                 (new PersonalArea()).Show();                     
                 thisWindow.Close();
             }));

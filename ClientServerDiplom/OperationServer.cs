@@ -92,16 +92,34 @@ namespace ClientServerDiplom
                         case 3:
                             #region Получение ответа от сервера насчёт данных о данном пользователе (CheckFullInfoOfPerson 3)
 
-                            Person.thisUser.name = reader.ReadString();
-                            Person.thisUser.lastname = reader.ReadString();
-                            Person.thisUser.level = reader.ReadInt32();
-                            Person.thisUser.likes = reader.ReadInt32();
-                            Person.thisUser.image = reader.ReadString();
-                            Person.thisUser.email = reader.ReadString();
-                            Person.thisUser.countProject = Int32.Parse(reader.ReadString());
-                            Person.thisUser.note = reader.ReadString();
+                            if (reader.ReadBoolean())
+                            {
+                                Person.thisUser.name = reader.ReadString();
+                                Person.thisUser.lastname = reader.ReadString();
+                                Person.thisUser.level = reader.ReadInt32();
+                                Person.thisUser.likes = reader.ReadInt32();
+                                Person.thisUser.image = reader.ReadString();
+                                Person.thisUser.email = reader.ReadString();
+                                Person.thisUser.countProject = Int32.Parse(reader.ReadString());
+                                Person.thisUser.note = reader.ReadString();
+                                Person.thisUser.countSub = Int32.Parse(reader.ReadString());
 
-                            PersonalArea.SetPersonalInfo();
+                                PersonalArea.SetPersonalInfo();
+                            }
+                            else
+                            {
+                                Profile.profileUser.name = reader.ReadString();
+                                Profile.profileUser.lastname = reader.ReadString();
+                                Profile.profileUser.level = reader.ReadInt32();
+                                Profile.profileUser.likes = reader.ReadInt32();
+                                Profile.profileUser.image = reader.ReadString();
+                                Profile.profileUser.email = reader.ReadString();
+                                Profile.profileUser.countProject = Int32.Parse(reader.ReadString());
+                                Profile.profileUser.note = reader.ReadString();
+                                Profile.profileUser.countSub = Int32.Parse(reader.ReadString());
+
+                                Profile.SetPanels(Profile.thisWindow, Profile.profileUser);
+                            }
                             #endregion
                             break;
 
@@ -141,14 +159,14 @@ namespace ClientServerDiplom
                             #region Получение информации о проекте (YouProject)
                             YourProject.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
                             {
-                                string x = reader.ReadString();
-                                string b = reader.ReadString();
-                                double c = double.Parse(reader.ReadString().Replace('.', ','));
-                                int y = Int32.Parse(reader.ReadString());
-                                string n = reader.ReadString();
-                                string s = reader.ReadString();
-                                YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, x, b,
-                                   c, y, n, s, Int32.Parse(reader.ReadString()));
+                                string nameProj = reader.ReadString();
+                                string dateU = reader.ReadString();
+                                double ratingU = double.Parse(reader.ReadString().Replace('.', ','));
+                                int countVoteU = Int32.Parse(reader.ReadString());
+                                string noteU = reader.ReadString();
+                                string imageU = reader.ReadString();
+                                YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, nameProj, dateU,
+                                   ratingU, countVoteU, noteU, imageU, Int32.Parse(reader.ReadString()));
                                 //YourProject.SetInfoForSettingsPanel(YourProject.thisWindow, reader.ReadString(), reader.ReadString(),
                                 //        double.Parse(reader.ReadString().Replace('.', ',')), Int32.Parse(reader.ReadString()),
                                 //        reader.ReadString(), reader.ReadString(), Int32.Parse(reader.ReadString()));
@@ -158,7 +176,7 @@ namespace ClientServerDiplom
                             #endregion
                             break;
 
-                        #region Работа с файлами (1000 - 1999)
+                        #region Работа с файлами (1000 - 2000)
 
                         case 1001:
                             #region Отправка файла серверу
@@ -172,6 +190,8 @@ namespace ClientServerDiplom
                         case 1002:
                             #region  Получение списка проектов сохраненные на сервере;
 
+                            bool isThisUser = reader.ReadBoolean();
+
                             int idProject = reader.ReadInt32();
                             string name = reader.ReadString();
                             int countVote = reader.ReadInt32();
@@ -180,9 +200,11 @@ namespace ClientServerDiplom
                             string note = reader.ReadString();
                             string image = reader.ReadString();
                             string viewApplication = reader.ReadString();
-
-                            Person.thisUser.listProject.Add(new Project(idProject, name, countVote, rating, date, viewApplication, note, image));
-                         
+                           
+                            if(isThisUser)
+                                Person.thisUser.listProject.Add(new Project(idProject, name, countVote, rating, date, viewApplication, note, image));
+                            else
+                                Profile.profileUser.listProject.Add(new Project(idProject, name, countVote, rating, date, viewApplication, note, image));
                             #endregion
                             break;
 
@@ -220,8 +242,6 @@ namespace ClientServerDiplom
                             File.WriteAllBytes(nameFile, fileReceiving.fileByte);
                             fileReceiving = null;
                             #endregion
-
-
                             break;
 
                         case 1006:
@@ -307,7 +327,17 @@ namespace ClientServerDiplom
                             }
                             #endregion
                             break;
+                        #endregion
+
+                        case 2003:
+                            #region Провка на подпику у профиля другого пользователя;
+                            Profile.thisWindow.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                            {
+                                int a = reader.ReadInt32();
+                                Profile.IsSubscribe(Profile.thisWindow.subButton, ( a == 1) ? false : true);
+                            }));
                             #endregion
+                            break;
                     }
 
                     if (!soket.Connected)

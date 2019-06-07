@@ -37,12 +37,14 @@ namespace ClientServerDiplom
 
         public int level { get; set; } // Уровень пользователя;
         public int likes { get; set; }  // Кол-во лайков на аккаунте пользователя;
+        public int countSub { get; set; } // Кол-во подписчиков;
 
         public string image { get; set; }  // Аватарка пользователя;
         public string email { get; set; }  // Почта пользователя;
 
         public int countProject { get; set; } // Количество проектов;
         public string note { get; set; } // Описание (О себе);
+
 
         public List<Project> listProject { get; set; } // Лист с списком проектов у данного пользователя;
 

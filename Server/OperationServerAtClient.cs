@@ -67,23 +67,16 @@ namespace Server
         /// </summary>
         /// <param name="client">Сокет клиента</param>
         /// <param name="login">Логин</param>
-        public static void CheckFullInfoOfPerson(Socket client, string login)
+        /// <param name="isThisUser"></param>
+        public static void CheckFullInfoOfPerson(Socket client, string login, bool isThisUser)
         {
-            string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut", "@countProjectOut","@noteOut" };
+            string[] arrParm = { "@loginUser", "@nameOut", "@lastnameOut", "@levelOut", "@likeOut", "@imageOut", "@emailOut", "@countProjectOut","@noteOut" , "@countSubOut" };
             string[] arrParmData = { login };
             string[] arrParmOut = MySqlClass.MySQLInOut("CheckFullInfoPerson", arrParm, arrParmData);
-         
-            foreach(var clientU in ServerClass.clients)
-            {
-                if (clientU.socket == client)
-                {
-                    clientU.countLike = Int32.Parse(arrParmOut[3]);
-                    break;
-                }
-            }
+              
 
-            ServerClass.SendMsgClient(client, 1024, 3, arrParmOut[0], arrParmOut[1], Int32.Parse(arrParmOut[2]),
-                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5], arrParmOut[6], arrParmOut[7]);
+            ServerClass.SendMsgClient(client, 1024, 3, isThisUser, arrParmOut[0], arrParmOut[1], Int32.Parse(arrParmOut[2]),
+                                    Int32.Parse(arrParmOut[3]), arrParmOut[4], arrParmOut[5], arrParmOut[6], arrParmOut[7], arrParmOut[8]);
             
         }
 
@@ -98,17 +91,17 @@ namespace Server
             string[] arrParmData = { login };
             string[] arrParmOut = MySqlClass.MySQLInOut("CheckNewLike", arrParm, arrParmData);
 
-            foreach (var clientU in ServerClass.clients)
-            {
-                if (clientU.socket == client)
-                {
-                    if(clientU.countLike != Int32.Parse(arrParmOut[0]))
-                    {                       
-                        clientU.countLike = Int32.Parse(arrParmOut[0]);
-                        ServerClass.SendMsgClient(client, 64, 5, arrParmOut[0]);
-                    }
-                }
-            }       
+            //foreach (var clientU in ServerClass.clients)
+            //{
+            //    if (clientU.socket == client)
+            //    {
+            //        if(clientU.countLike != Int32.Parse(arrParmOut[0]))
+            //        {                       
+            //            clientU.countLike = Int32.Parse(arrParmOut[0]);
+            //            ServerClass.SendMsgClient(client, 64, 5, arrParmOut[0]);
+            //        }
+            //    }
+            //}       
         }
 
         /// <summary>
@@ -181,7 +174,8 @@ namespace Server
         /// </summary>
         /// <param name="client">Сокет клиента</param>
         /// <param name="login">Логин</param>
-        public static void GetListProject(Socket client, string login)
+        /// <param name="isThisUser"></param>
+        public static void GetListProject(Socket client, string login, bool isThisUser)
         {
             try
             {
@@ -209,7 +203,7 @@ namespace Server
 
                     string viewApplication = reader.GetString(9);
                   
-                    ServerClass.SendMsgClient(client, 2048, 1002, idProject, name, countVote, rating, date, note, image, viewApplication);
+                    ServerClass.SendMsgClient(client, 2048, 1002, isThisUser, idProject, name, countVote, rating, date, note, image, viewApplication);
                 }
             }
             catch(Exception ex) { ServerClass.WriteConsoleMsg("GetListProject : " + ex.Message); }
@@ -469,15 +463,56 @@ namespace Server
             });
         }
         #endregion
+
+        #region Профиль другого пользователя
+        /// <summary>
+        /// Действие подписки\отписки 
+        /// </summary>
+        /// <param name="profile">имя профиля на который подписываются</param>
+        /// <param name="sub">имя профиля который подписывается</param>
+        /// <param name="isSub">Состояние подписки</param>
+        public void SubscribeUser(string profile, string sub, bool isSub)
+        {           
+            if (isSub)
+            {
+                string dateNow = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                string[] arrParm = { "@profile", "@sub", "@dateSub" };
+                string[] arrParmData = { profile, sub, dateNow};
+                MySqlClass.MySQLIn("SubscribeUsers", arrParm, arrParmData);
+            }
+            else
+            {
+                string[] arrParm = { "@profile", "@sub" };
+                string[] arrParmData = { profile, sub };
+                MySqlClass.MySQLIn("DeleteSubscribe", arrParm, arrParmData);
+            }
+        }
+
+        public int CheckSubscribe(string profile, string sub)
+        {       
+            string[] arrParm = { "@profile", "@sub", "@isSub" };
+            string[] arrParmData = { profile, sub };
+            string[] arrParmOut = MySqlClass.MySQLInOut("CheckToSubscribe", arrParm, arrParmData);
+
+            return Int32.Parse(arrParmOut[0]);
+        }
+        #endregion
     }
 
+    /// <summary>
+    /// Интерфейс для работы с людьми
+    /// </summary>
     public interface IPeople
     {
-
         void SearchPeople(Socket client, string stringFind);
 
         void SendTopProject(Socket client);
 
         void RandomPeople(Socket client, string login);
+
+        void SubscribeUser(string profile, string sub, bool isSub);
+
+        int CheckSubscribe(string profile, string sub);
     }
 }

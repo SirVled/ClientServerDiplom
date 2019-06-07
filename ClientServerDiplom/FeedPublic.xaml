@@ -37,7 +37,7 @@
                 </TextBox.RenderTransform>
             </TextBox>
             <ScrollViewer Margin="10,36,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                <ListBox x:Name="searchListBox" HorizontalAlignment="Left" Height="192" VerticalAlignment="Top" Width="215"/>
+                <ListBox x:Name="searchListBox" HorizontalAlignment="Left" Height="192" VerticalAlignment="Top" Width="215" />
             </ScrollViewer>
             <Button x:Name="searchButton" Content="" HorizontalAlignment="Left" Style="{StaticResource SomeButtonStyle}" Margin="206,6,0,0" VerticalAlignment="Top" Width="30" MouseEnter="HoverButton" MouseLeave="LeaveButton" BorderThickness="0" Height="25" Cursor="Hand" Click="SearchPeople">
                 <Button.Background>

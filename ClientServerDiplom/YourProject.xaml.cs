@@ -293,7 +293,7 @@ namespace ClientServerDiplom
         /// </summary>
         /// <param name="sender">Панель с звёздами</param>
         /// <param name="ratingProject">Рейниг проекта</param>
-        private static void DrawStarsForProject(StackPanel sender, double ratingProject)
+        public static void DrawStarsForProject(StackPanel sender, double ratingProject)
         {              
             sender.ToolTip = $"Рейтинг: {ratingProject}";
 

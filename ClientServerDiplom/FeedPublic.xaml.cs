@@ -198,7 +198,7 @@ namespace ClientServerDiplom
             if (listFind.Count > 0)
             {
                 List<Grid> stackPanels = new List<Grid>();
-
+                               
                 foreach (var item in listFind)
                 {
                     Grid gridUser = CreatePanelGridUser(item);
@@ -223,6 +223,14 @@ namespace ClientServerDiplom
                 Margin = new Thickness(3,10,0,10),
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left
+            };
+            userPanel.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ClickCount >= 2)
+                {
+                    (new Profile(item)).Show();
+                    thisWindow.Close();
+                }
             };
 
             Rectangle imageUser = new Rectangle
@@ -344,6 +352,14 @@ namespace ClientServerDiplom
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left
             };
+            userPanel.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ClickCount >= 2)
+                {
+                    (new Profile(item)).Show();
+                    thisWindow.Close();
+                }
+            };
 
             Ellipse image = new Ellipse
             {
@@ -451,6 +467,14 @@ namespace ClientServerDiplom
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left
+            };
+            spRnd.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ClickCount >= 2)
+                {
+                    (new Profile(item)).Show();
+                    thisWindow.Close();
+                }
             };
 
             Ellipse el = new Ellipse

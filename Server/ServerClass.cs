@@ -113,7 +113,7 @@ namespace ServerDiplom
                             // InfoUser 4. Узнаем информацию о юзере;
                             case 4:
                                 login = reader.ReadString();
-                                OperationServerAtClient.CheckFullInfoOfPerson(client, login);
+                                OperationServerAtClient.CheckFullInfoOfPerson(client, login, reader.ReadBoolean());
                                 break;
 
                             // CheckNewLike 5. Проверяем изменение в количестве лайков у пользователя;
@@ -263,7 +263,7 @@ namespace ServerDiplom
 
                             // Получение списка проектов у данного пользователя;
                             case 1005:
-                                OperationServerAtClient.GetListProject(client, reader.ReadString());                                                          
+                                OperationServerAtClient.GetListProject(client, reader.ReadString(),reader.ReadBoolean());                                                          
                                 break;
 
                             // Получение массив байт файла который выбрал клиент для скачивания;
@@ -307,6 +307,19 @@ namespace ServerDiplom
                             // Получение рандомных людей;
                             case 2002:
                                 workPeople.RandomPeople(client, reader.ReadString());
+                                break;
+                            // Подписка\Отписка от данного пользователя;
+                            case 2003:                            
+                                string profile = reader.ReadString();
+                                string subUser = reader.ReadString();
+                                bool isSub = reader.ReadBoolean();
+                                workPeople.SubscribeUser(profile, subUser, isSub);
+                                break;
+                            // Проверка на подписку пользователя;
+                            case 2004:
+                                profile = reader.ReadString();
+                                subUser = reader.ReadString();
+                                SendMsgClient(client,128,2003,workPeople.CheckSubscribe(profile, subUser));
                                 break;
                             #endregion
                         }

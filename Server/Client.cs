@@ -10,10 +10,8 @@ namespace ServerDiplom
 
         public int id { get; set; }
 
-        public string name { get; set; } 
-     
-        public int countLike { get; set; } // Кол-во лайков на профиле у пользователя;
-
+        public string name { get; set; }  
+       
         public Socket socket { get; set; }
     
     }

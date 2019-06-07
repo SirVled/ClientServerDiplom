@@ -73,10 +73,16 @@
       <DependentUpon>FeedPublic.xaml</DependentUpon>
     </Compile>
     <Compile Include="FileSend.cs" />
+    <Compile Include="NotificationsWindow.xaml.cs">
+      <DependentUpon>NotificationsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OperationServer.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="PersonalArea.xaml.cs">
       <DependentUpon>PersonalArea.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Profile.xaml.cs">
+      <DependentUpon>Profile.xaml</DependentUpon>
     </Compile>
     <Compile Include="SendMailPass.xaml.cs">
       <DependentUpon>SendMailPass.xaml</DependentUpon>
@@ -101,7 +107,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="NotificationsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PersonalArea.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Profile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
